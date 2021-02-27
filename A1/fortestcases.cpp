@@ -3,7 +3,7 @@
 	* Author - Mohit Thakur
 */
 
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 #define pb push_back
@@ -14,8 +14,8 @@ using namespace std;
 long double ans = 0;
 int n;
 vector<pair<int,int>> b;
-int mod = 46;
-int scal = 9;
+int mod = 1e3+3;
+int scal = 501;
 void printinfile()
 {
 	cout.precision(10);
@@ -34,9 +34,9 @@ int main()
 	cin.tie(0); cout.tie(0);
 	#ifndef ONLINE_JUDGE 
     freopen("in.in", "r", stdin); 
-    freopen("case9.a", "w", stdout);  
+    freopen("randomlargecase4.txt", "w", stdout);  
 	#endif
-	n=6;
+	n=500;
 	b.resize(0);
 	srand(time(0));
 	int x = rand()%mod - scal;
@@ -46,12 +46,19 @@ int main()
 	{
 		int dx = rand()%mod;
 		int yn = rand()%mod - scal;
-		long double t = ((dx)*(yn+y));
+		long double t =dx;
+		if(yn*y>=0) t *= abs(yn+y);
+		else
+		{
+			long double k = (yn*yn + y*y);
+			 k/=(yn-y);
+			t *= abs(k);
+		}
 		ans += t/2;
 		x = x+dx;y = yn;
 		b.pb(mp(x,y));
 	}
-	cerr<<ans;
+	cerr<<fixed<<ans;
 	printinfile();
 
 	cerr<<"time taken : "<<(float)clock()/CLOCKS_PER_SEC<<" secs"<<"\n";
