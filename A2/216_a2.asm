@@ -62,7 +62,7 @@ op2:						# for -
 	lw $t3, ($sp)
 	addu $sp,$sp,4
 
-	sub $t4, $t2, $t3
+	sub $t4, $t3, $t2
 	j push_in_stack
 
 op3:						# for *
