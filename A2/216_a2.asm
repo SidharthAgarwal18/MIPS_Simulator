@@ -9,9 +9,11 @@ main:
 	li $t5,0				#contains size of stack initially 0
 	li $t6,2				#for comparing with t5
 	j loop
-
+	
 loop:
-	jal getc				#takes input+NULL in char
+	j getc				#takes input+NULL in char
+
+loop_intermediate:
 	lb $t0,char				#transfers 1 byte from char buffer to $t0
 
 	lb $t1,newline			#if newline then finish
@@ -41,7 +43,7 @@ getc:
 	la $a0,char				#takes buffer input from user+NULL in char
 	li $a1,2				#char is stored in two bytes
 	syscall
-	jr $ra					#return to line below "jal getc"
+	j loop_intermediate					
 
 op1:						# for +
 	blt $t5,$t6, incorrect_exp
