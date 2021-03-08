@@ -1,0 +1,28 @@
+Design Decisions:
+1)We have have maintained an array of integers of size 2^20 to act as memory for our assembler. Now instructions of size 4 bytes have been divided into sub-categories and encrypted and decrypted accordingly to be stored in form a 32 bit integer.
+since there are 10 possible instructions, this information is stored in 4 consecutive bits from 26 to 30 in the integer.
+
+type_a : add,sub,mul : 
+	26-30 bits for unique instruction number assigned
+	21-26 bits for register1
+	16-21 bits for register2
+	11-16 bits for register3
+type_b : bne,beq,addi
+	26-30 bits for unique instruction number assigned
+	21-26 bits for register1
+	16-21 bits for register2
+	0-16 bits used to store integer for instruction number in case of bne and beq and number to be added in addi
+types_c : j
+	26-30 bits for unique instruction number assigned
+	0-26 bits used to store integer for instruction number
+
+2) we have stored 32 registers in R array and also mapped each register with unique number
+
+
+
+We will traverse the given input file(converted into string) line by line and first find the instruction type of the instruction by 
+using "find" of c++ stl and then later encrypting the instruction into a 32 bit integer and storing in array.
+After reading the complete file we will start traversing the array from instruction 0 and on it's way decrypt every integer
+to perform the action required which may even include jumping to another instruction till we are completely done with the last instruction.
+	
+	
