@@ -3,6 +3,8 @@
 #include <string.h>
 using namespace std;
 
+
+
 void print_registers(int R[])
 {
 	cout<<"$zero :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
@@ -21,7 +23,7 @@ int StringtoNumber(string name)
 	int digit = 0;
 	int pos = 0;
 	int n = name.length();
-	while(pos<n && name.at(pos)!=' ' && name.at(pos)!='\n')
+	while(pos<n && name.at(pos)-'0'>=0 && name.at(pos) -'9'<=0)
 	{
 		digit = name.at(pos) - '0';
 		number = 10*number + digit; 
@@ -34,7 +36,8 @@ int StringtoNumber(string name)
 int map_instruction(string name,int instruction,int memory[])
 {
 	int number = 1;
-	if(name.find("sub")!=string::npos)number=2;
+	if(name.find("add")!=string::npos)number=1;
+	else if(name.find("sub")!=string::npos)number=2;
 	else if(name.find("mul")!=string::npos)number =3;
 	else if(name.find("slt")!=string::npos)number=4;
 	else if(name.find("bne")!=string::npos)number=5;
@@ -43,6 +46,7 @@ int map_instruction(string name,int instruction,int memory[])
 	else if(name.find("lw")!=string::npos)number=8;
 	else if(name.find("sw")!=string::npos)number=9;
 	else if(name.find("addi")!=string::npos)number=10;
+	else number = 11;					// 11 is for invalid instruction.
 	
 	memory[instruction] = number<<26;			//since only 2^31-1 max value available bits = 30
 	
@@ -137,13 +141,35 @@ void type_c(string name,int memory[],int instruction)	//for j
 	memory[instruction] = memory[instruction] + address;       //address is stored in the 26 least significant bits 		
 }
 
+void type_d(string name,int memory[],int instruction)	//for lw and sw
+{
+	int offset;
+	int pos = name.find("$");
+	string reg = name.substr(pos,3);
+	memory[instruction] = memory[instruction] + (R_index(reg)<<21);
+	
+	pos = pos +3;
+	while(pos<name.length() && (name[pos]<48 || name[pos]>57))
+	{pos++;}
+	
+	offset = StringtoNumber(name.substr(pos,name.length()-pos)); //StringtoNumber stops as soon as it sees a non-digit charatecter
+	
+	pos = name.find("$",pos);
+	string reg = name.substr(pos,3);
+	memory[instruction] = memory[instruction] + (R_index(reg)<<16);
+	
+	memory[instruction] = memory[instruction] + offset;	
+}
+
 void read_and_save_instruction(string instruction_string,int memory[],int instruction)
 {
 	int type = map_instruction(instruction_string,instruction,memory);
 	//cout << type ;
 	if(type==1||type==2||type==3||type==4) type_a(instruction_string,memory,instruction);
 	else if(type==5||type==6||type==10) type_b(instruction_string,memory,instruction);
-	else type_c(instruction_string,memory,instruction);
+	else if (type==7)type_c(instruction_string,memory,instruction);
+	else if(type==8 || type==9)type_d(instruction_string,memory,instruction);
+	//else raise exception......
 }
 
 int decode_a(int memory_instruction,int R[],int instruction,int op)
@@ -166,16 +192,13 @@ int decode_b(int memory_instruction,int R[],int instruction,int op)
 	int address = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-	//int op = ((1<<5)-1) & (memory_instruction>>26);
-	
+		
 	if(op==6 && r1==r2)
 	{
-		//goto address;       // function to jump to required instruction in memory array
 		return address;
 	}
 	else if(op==5 && r1!=r2)
 	{
-		//goto address;       // function to jump to required instruction in memory array
 		return address;
 	}
 	else if(op==10) R[r1] = R[r2] + address;
@@ -185,8 +208,21 @@ int decode_b(int memory_instruction,int R[],int instruction,int op)
  int decode_c(int memory_instruction,int R[],int instruction,int op)
 {
 	int address = ((1<<26)-1) & memory_instruction;
-	// goto address;	// function to jump to required instruction in memory array
 	return address;
+}
+
+int decode_d(int memory_instruction,int R[],int instruction,int op)
+{
+	int offset = ((1<<16)-1) & (memory_instruction);
+	int r2 = ((1<<5)-1) & (memory_instruction>>16);
+	int r1 = ((1<<5)-1) & (memory_instruction>>21);
+	
+	offset = offset/4; 				//as 1 int has 4 bytes....... 
+	
+	if(op==8 && r2 + offset<32) R[r1] = R[r2 + offset];
+	else if(op==9 && r2+offset<32)R[r2+offset] = R[r1];
+	//else raise exception invalid register location..........
+	return instruction+1;
 }
 
 int main()
@@ -208,8 +244,6 @@ int main()
 	R[8]=9;R[9]=9;R[10] = 145;
 	//cout<<"a ";
 	
-
-
 	print_registers(R);
 	while(instruction<end_of_instruction)
 	{
@@ -219,7 +253,8 @@ int main()
 		//cout<<"a"<<type<<"a";
 		if(type==1||type==2||type==3||type==4) instruction = decode_a(memory_instruction,R,instruction,type);
 		else if(type==5||type==6||type==10) instruction = decode_b(memory_instruction,R,instruction,type);
-		else instruction = decode_c(memory_instruction,R,instruction,type);
+		else if(type==7)instruction = decode_c(memory_instruction,R,instruction,type);
+		else instruction = decode_d(memory_instruction,R,instruction,type);
 		print_registers(R);
 	}
 	return 0;
