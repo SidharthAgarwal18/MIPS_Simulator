@@ -1,13 +1,25 @@
 #include<iostream.h>
 using namespace std;
 
+void print_registers(int R[])
+{
+	cout<<"$zero :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
+	cout<<"$a1 :"<<R[5]<<endl<<"$a2 :"<<R[6]<<endl<<"$a3 :"<<R[7]<<endl<<"$t0 :"<<R[8]<<endl<<"$t1 :"<<R[9]<<endl;
+	cout<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl;
+	cout<<"$t7 :"<<R[15]<<endl<<"$s0 :"<<R[16]<<endl<<"$s1 :"<<R[17]<<endl<<"$s2 :"<<R[18]<<endl<<"$s3 :"<<R[19]<<endl;
+	cout<<"$s4 :"<<R[20]<<endl<<"$s5 :"<<R[21]<<endl<<"$s6 :"<<R[22]<<endl<<"$s7 :"<<R[23]<<endl<<"$t8 :"<<R[24]<<endl;
+	cout<<"$t9 :"<<R[25]<<endl<<"$k0 :"<<R[26]<<endl<<"$k1 :"<<R[27]<<endl<<"$gp :"<<R[28]<<endl<<"$sp :"<<R[29]<<endl;
+	cout<<"$fp :"<<R[30]<<endl<<"$ra :"<<R[31]<<endl;
+	return ;	
+}
+
 int StringtoNumber(string name)
 {
 	int number = 0;
 	itn digit = 0;
 	int pos = 0;
 	int n = name.length();
-	while(pos<n)
+	while(pos<n && name.at(pos)!=' ' && name.at(pos)!='\n')
 	{
 		digit = name.at(pos) - '0';
 		number = 10*number + digit; 
@@ -69,7 +81,7 @@ int R_index(string name,int R[])
 	else if(isSubstring(name,"$ra")!=-1) return 31;
 }
 
-void type_a(string name,int memory[],int R[],int instruction)	//for add,sub,mul
+void type_a(string name,int memory[],int R[],int instruction)	//for add,sub,mul,slt
 {
 	int pos = name.find("$");
 	string reg = name.substr(pos,3);
@@ -86,7 +98,7 @@ void type_a(string name,int memory[],int R[],int instruction)	//for add,sub,mul
 	return;	
 }
 
-void type_b(string name,int memory[],int R[],int instruction)	//for beq bne
+void type_b(string name,int memory[],int R[],int instruction)	//for beq bne addi
 {
 	int pos = name.find("$");
 	string reg = name.substr(pos,3);
@@ -101,9 +113,58 @@ void type_b(string name,int memory[],int R[],int instruction)	//for beq bne
 	{pos++;}
 	
 	int address = StringtoNumber(name.substr(pos,name.length()-pos));
-	memory[instruction] = memory[instruction] + address;	// address is stored in the 16 least significant bits			
+	memory[instruction] = memory[instruction] + address; //address(or no. for addition)is stored in the 16 least sig. bits		
 }
 
+void type_c(string name,int memory[],int R[],int instruction)	//for j
+{
+	int pos = 0;
+	while(name[pos]<48 || name[pos]>57)
+	{pos++;}
+	
+	int address = StringtoNumber(name.substr(pos,name.length()-pos));
+	memory[instruction] = memory[instruction] + address;       //address is stored in the 26 least significant bits 		
+}
+
+
+void decode_a(int memory[],int R[],int instruction)
+{
+	int r3 = ((1<<5)-1) & (memory[instruction]>>11);
+	int r2 = ((1<<5)-1) & (memory[instruction]>>16);
+	int r1 = ((1<<5)-1) & (memory[instruction]>>21);
+	int op = ((1<<5)-1) & (memory[instruction]>>26);
+	
+	if(op==1) R[r1] = R[r2] + R[r3];
+	else if(op==2) R[r1] = R[r2] - R[r3];
+	else if(op==3) R[r1] = R[r2] * R[r3];
+	else if(op==6 && r2<r3) R[r1] = 1;
+	else R[r1] = 0;	
+}
+
+void decode_b(int memory[],int R[],int instruction)
+{
+	int address = ((1<<16)-1) & (memory[instruction]);
+	int r2 = ((1<<5)-1) & (memory[instruction]<<16);
+	int r1 = ((1<<5)-1) & (memory[instruction]<<21);
+	int op = ((1<<5)-1) & (memory[instruction]>>26);
+	
+	if(op==4 && r1==r2)
+	{
+		//goto address;       // function to jump to required instruction in memory array
+	}
+	else if(op==5 && r1!=r2)
+	{
+		//goto address;       // function to jump to required instruction in memory array
+	}
+	else if(op==10) R[r1] = R[r2] + address;
+		
+}
+
+void decode_c(int memory[],int R[],int instruction)
+{
+	int addresss = ((1<<26)-1) & memory[instruction];
+	// goto address;	// function to jump to required instruction in memory array
+}
 
 int main()
 {
