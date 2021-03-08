@@ -195,9 +195,9 @@ int main()
 	{
 		int instruction_string = memory[instruction];
 		int type = ((1<<5)-1) & (memory_instruction>>26);
-		if(type==1||type==2||type==3||type==4) decode_a(instruction_string,R,instruction,type);
-		if(type==5||type==6||type==10) decode_b(instruction_string,R,instruction,type);
-		else decode_c(instruction_string,R,instruction,type);
+		if(type==1||type==2||type==3||type==4) instruction = decode_a(instruction_string,R,instruction,type);
+		if(type==5||type==6||type==10) instruction = decode_b(instruction_string,R,instruction,type);
+		else instruction = decode_c(instruction_string,R,instruction,type);
 	}
 	return 0;
 }
