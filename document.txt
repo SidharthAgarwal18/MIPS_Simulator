@@ -16,7 +16,10 @@ types_c : j
 	26-30 bits for unique instruction number assigned
 	0-26 bits used to store integer for instruction number
 
-2) we have stored 32 registers in R array and also mapped each register with unique number
+2) we have stored 32 registers in R array and also mapped each register with unique number.
+3) We have assumed that data can only be stored after instructions end and within the size of the memory block.
+4) We have thrown exception if any invalid statement has been entered by the user.
+
 
 
 
