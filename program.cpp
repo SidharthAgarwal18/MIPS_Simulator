@@ -116,7 +116,7 @@ void type_a(string name,int memory[],int instruction,int pos)	//for add,sub,mul,
 	string reg;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-	
+			
 	if(pos+2>=n) throw invalid_argument("Unexpected input");			//substring for register should pe possible
 	
 	reg = name.substr(pos,3);
@@ -127,6 +127,8 @@ void type_a(string name,int memory[],int instruction,int pos)	//for add,sub,mul,
 	pos +=3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
+	
 	if(int(name[pos]) == 44) 							//1 comma after register1
 	{	
 		pos++;
@@ -142,6 +144,8 @@ void type_a(string name,int memory[],int instruction,int pos)	//for add,sub,mul,
 	pos += 3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//{ws+}{,}{ws+}
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
+	
 	if(int(name[pos]) == 44) 
 	{
 		pos++;
@@ -176,6 +180,7 @@ void type_b(string name,int memory[],int instruction,int pos)				//for beq bne a
 	pos +=3;
 	
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
 	if(int(name[pos]) == 44)
 	{
 		pos++;
@@ -192,6 +197,7 @@ void type_b(string name,int memory[],int instruction,int pos)				//for beq bne a
 
 	//cerr << name[pos];
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
 	if(int(name[pos]) == 44)
 	{	
 		pos++;
@@ -199,6 +205,7 @@ void type_b(string name,int memory[],int instruction,int pos)				//for beq bne a
 	}
 	else throw invalid_argument("Unexpected input");
 	
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
 	int address = StringtoNumber(name.substr(pos,n-pos));
 	memory[instruction] = memory[instruction] + address; //address(or no. for addition)is stored in the 16 least sig. bits		
 }
@@ -207,6 +214,8 @@ void type_c(string name,int memory[],int instruction,int pos)	//for j
 {
 	int n = name.length();
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
 	int address = StringtoNumber(name.substr(pos,name.length()-pos));
 	memory[instruction] = memory[instruction] + address;       //address is stored in the 26 least significant bits 		
 }
@@ -219,6 +228,7 @@ void type_d(string name,int memory[],int instruction,int pos)	//for lw and sw
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
 	
+	if(pos+2>=n) throw invalid_argument("Unexpected input");			//substring for register should pe possible
 	reg = name.substr(pos,3);
 	r = R_index(reg);
 	if(r == -1) throw invalid_argument("Unexpected inputa");			//no valid register
@@ -227,6 +237,7 @@ void type_d(string name,int memory[],int instruction,int pos)	//for lw and sw
 	pos +=3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
+	if(pos==n) throw invalid_argument("Unexpected input");				//input length smaller.
 	if(int(name[pos]) == 44) 							//1 comma after register1
 	{	
 		pos++;
