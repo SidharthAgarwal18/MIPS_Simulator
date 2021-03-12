@@ -1,31 +1,33 @@
 Design Decisions:
-1)We have have maintained an array of integers of size 2^20 to act as memory for our assembler. Now instructions of size 4 bytes have been divided into sub-categories and encrypted and decrypted accordingly to be stored in form a 32 bit integer.
+1)We have have maintained an array of integers of size 2^18 to act as memory for our assembler. Now instructions of size 4 bytes have been divided into sub-categories and encrypted and decrypted accordingly to be stored in form a 32 bit integer.
 since there are 10 possible instructions, this information is stored in 4 consecutive bits from 26 to 30 in the integer.
 
-type_a : add,sub,mul : 
+type_a : add,sub,mul : 					<type> $r1,$r2,$r3
 	26-30 bits for unique instruction number assigned
 	21-26 bits for register1
 	16-21 bits for register2
 	11-16 bits for register3
-type_b : bne,beq,addi
+type_b : bne,beq,addi						<type> $r1,$r2,<label/value>
 	26-30 bits for unique instruction number assigned
 	21-26 bits for register1
 	16-21 bits for register2
 	0-16 bits used to store integer for instruction number in case of bne and beq and number to be added in addi
-types_c : j
+types_c : j							<type> <label/value>
 	26-30 bits for unique instruction number assigned
 	0-26 bits used to store integer for instruction number
+types_d : sw,lw						<type> $r1,offset($r2)
+	26-30 bits for unique instruction number assigned
+	21-26 bits for register1
+	16-21 bits for register2
+	0-16 bits for offset
 
 2) we have stored 32 registers in R array and also mapped each register with unique number.
-3) We have assumed that data can only be stored after instructions end and within the size of the memory block.
-4) We have thrown exception if any invalid statement has been entered by the user.
+3) We have assumed that data can only be stored after instructions end and withsssin the size of the memory block.
+4) All the instruction format are very strict and any incomplete instruction or any garbage character except ' ' and '\t' will result in throwing of invalid_argument exception.
 
 
 
+->> We will traverse the given input file(converted into string) line by line and first find the instruction type of the instruction by using "find" of c++ stl and then later encrypting the instruction into a 32 bit integer and storing in array.After reading the complete file we will start traversing the array from instruction 0 and on it's way decrypt every integer to perform the action required which may even include jumping to another instruction till we are completely done with the last instruction.
 
-We will traverse the given input file(converted into string) line by line and first find the instruction type of the instruction by 
-using "find" of c++ stl and then later encrypting the instruction into a 32 bit integer and storing in array.
-After reading the complete file we will start traversing the array from instruction 0 and on it's way decrypt every integer
-to perform the action required which may even include jumping to another instruction till we are completely done with the last instruction.
-	
+->> we have also dealt with the case when offset%4!=0 in lw or sw by storing or reteriving information from appropriate bits of two consecutive data.
 	
