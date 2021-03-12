@@ -8,17 +8,17 @@ using namespace std;
 
 void print_registers(int R[])
 {
-	cout<<"$ze :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
-	cout<<"$a1 :"<<R[5]<<endl<<"$a2 :"<<R[6]<<endl<<"$a3 :"<<R[7]<<endl<<"$t0 :"<<R[8]<<endl<<"$t1 :"<<R[9]<<endl;
-	cout<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl;
-	cout<<"$t7 :"<<R[15]<<endl<<"$s0 :"<<R[16]<<endl<<"$s1 :"<<R[17]<<endl<<"$s2 :"<<R[18]<<endl<<"$s3 :"<<R[19]<<endl;
-	cout<<"$s4 :"<<R[20]<<endl<<"$s5 :"<<R[21]<<endl<<"$s6 :"<<R[22]<<endl<<"$s7 :"<<R[23]<<endl<<"$t8 :"<<R[24]<<endl;
-	cout<<"$t9 :"<<R[25]<<endl<<"$k0 :"<<R[26]<<endl<<"$k1 :"<<R[27]<<endl<<"$gp :"<<R[28]<<endl<<"$sp :"<<R[29]<<endl;
-	cout<<"$fp :"<<R[30]<<endl<<"$ra :"<<R[31]<<endl<<"\n";
+	cout<<hex<<"$ze :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
+	cout<<hex<<"$a1 :"<<R[5]<<endl<<"$a2 :"<<R[6]<<endl<<"$a3 :"<<R[7]<<endl<<"$t0 :"<<R[8]<<endl<<"$t1 :"<<R[9]<<endl;
+	cout<<hex<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl;
+	cout<<hex<<"$t7 :"<<R[15]<<endl<<"$s0 :"<<R[16]<<endl<<"$s1 :"<<R[17]<<endl<<"$s2 :"<<R[18]<<endl<<"$s3 :"<<R[19]<<endl;
+	cout<<hex<<"$s4 :"<<R[20]<<endl<<"$s5 :"<<R[21]<<endl<<"$s6 :"<<R[22]<<endl<<"$s7 :"<<R[23]<<endl<<"$t8 :"<<R[24]<<endl;
+	cout<<hex<<"$t9 :"<<R[25]<<endl<<"$k0 :"<<R[26]<<endl<<"$k1 :"<<R[27]<<endl<<"$gp :"<<R[28]<<endl<<"$sp :"<<R[29]<<endl;
+	cout<<hex<<"$fp :"<<R[30]<<endl<<"$ra :"<<R[31]<<endl<<"\n";
 	return ;	
 }
 
-int StringtoNumber(string name)
+int StringtoNumber(string name,int instruction)
 {
 	int number = 0;
 	int digit = 0;
@@ -31,7 +31,7 @@ int StringtoNumber(string name)
 		pos++;	
 	}
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected inpute");		//no garbage character allowed before, b/w and after number.
+	if(pos<n) throw invalid_argument("Unexpected input " + to_string(instruction) + " : Not all digits");		//no garbage character allowed before, b/w and after number.
 	return number;
 }
 
@@ -61,7 +61,7 @@ pair<int,int> map_instruction(string name, int instruction,int memory[])
 		return make_pair(l+1,i+m);}
 	}
 	
-	if (i<n) throw invalid_argument("Unexpected inputod");
+	if (i<n) throw invalid_argument("Unexpected input "+to_string(instruction));
 	return make_pair(0,0);
 }
 
@@ -206,7 +206,8 @@ void type_b(string name,int memory[],int instruction,int pos)				//for beq bne a
 	else throw invalid_argument("Unexpected inputg");
 	
 	if(pos==n) throw invalid_argument("Unexpected inputh");				//input length smaller.
-	int address = StringtoNumber(name.substr(pos,n-pos));
+	int address = StringtoNumber(name.substr(pos,n-pos),instruction);
+	if(address > (1<<16)) throw invalid_argument("Unexpected inputi");
 	memory[instruction] = memory[instruction] + address; //address(or no. for addition)is stored in the 16 least sig. bits		
 }
 
@@ -216,7 +217,7 @@ void type_c(string name,int memory[],int instruction,int pos)	//for j
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
 	
 	if(pos==n) throw invalid_argument("Unexpected inputi");				//input length smaller.
-	int address = StringtoNumber(name.substr(pos,name.length()-pos));
+	int address = StringtoNumber(name.substr(pos,name.length()-pos),instruction);
 	memory[instruction] = memory[instruction] + address;       //address is stored in the 26 least significant bits 		
 }
 
@@ -249,7 +250,7 @@ void type_d(string name,int memory[],int instruction,int pos)	//for lw and sw
 	while(number_end<n && name[number_end]-'0'>=0 && name[number_end] -'9'<=0) number_end++;
 	if(number_end==pos || number_end==n) throw invalid_argument("Unexpected inputm");
 	
-	int offset = StringtoNumber(name.substr(pos,number_end-pos));
+	int offset = StringtoNumber(name.substr(pos,number_end-pos),instruction);
 	memory[instruction] = memory[instruction] + offset;
 	
 	pos = number_end;
@@ -394,19 +395,26 @@ int main()
 	}
 	end_of_instruction = instruction;
 	instruction = 0;
-	R[8]=9;R[9]=9;R[10] = 145;memory[31] = 91;
-	
+	int  clock_cycles = 0;
 	print_registers(R);
-	while(instruction<end_of_instruction)
+	vector<int> frequency(end_of_instruction,0);
+	while(instruction<end_of_instruction && instruction >=0)
 	{
+		clock_cycles ++;
+		frequency[instruction]++;
 		int memory_instruction = memory[instruction];
 		int type = ((1<<5)-1) & (memory_instruction>>26);
 		if(type==1||type==2||type==3||type==4) instruction = decode_a(memory_instruction,R,instruction,type);
 		else if(type==5||type==6||type==10) instruction = decode_b(memory_instruction,R,instruction,type);
 		else if(type==7)instruction = decode_c(memory_instruction,R,instruction,type);
 		else if (type ==8 || type == 9)instruction = decode_d(memory,R,instruction,type,end_of_instruction);
+		else instruction+=1;
 		print_registers(R);
 	}
-	cout << memory[31] << memory[32] << endl;
+	cout << "Clock cycles Elapsed: " << clock_cycles<<"\n";
+	for(int i=0;i<frequency.size();i++)
+	{
+		cout << "instruction at line_number " <<i<<" ran for " << frequency[i] <<" time(s)\n";
+	}
 	return 0;
 }
