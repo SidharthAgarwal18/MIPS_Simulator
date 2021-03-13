@@ -1,0 +1,2 @@
+addi $t0,$ze,50
+addi $t1,$ze,60
