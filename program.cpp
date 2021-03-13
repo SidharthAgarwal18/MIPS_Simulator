@@ -10,12 +10,12 @@ void print_registers(int R[])
 {
 	cout<<hex<<"$ze :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
 	cout<<"$a1 :"<<R[5]<<endl<<"$a2 :"<<R[6]<<endl<<"$a3 :"<<R[7]<<endl<<"$t0 :"<<R[8]<<endl<<"$t1 :"<<R[9]<<endl;
-	cout<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl;
+	cout<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl<<endl;
 	cout<<"$t7 :"<<R[15]<<endl<<"$s0 :"<<R[16]<<endl<<"$s1 :"<<R[17]<<endl<<"$s2 :"<<R[18]<<endl<<"$s3 :"<<R[19]<<endl;
 	cout<<"$s4 :"<<R[20]<<endl<<"$s5 :"<<R[21]<<endl<<"$s6 :"<<R[22]<<endl<<"$s7 :"<<R[23]<<endl<<"$t8 :"<<R[24]<<endl;
 	cout<<"$t9 :"<<R[25]<<endl<<"$k0 :"<<R[26]<<endl<<"$k1 :"<<R[27]<<endl<<"$gp :"<<R[28]<<endl<<"$sp :"<<R[29]<<endl;
 	cout<<"$fp :"<<R[30]<<endl<<"$ra :"<<R[31]<<endl<<"\n";
-	return ;	
+	return ;
 }
 
 int StringtoNumber(string name,int instruction)
@@ -300,7 +300,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op)
 	if(op==1) {R[r1] = R[r2] + R[r3];}
 	else if(op==2) R[r1] = R[r2] - R[r3];
 	else if(op==3) R[r1] = R[r2] * R[r3];
-	else if(op==4 && r2<r3) R[r1] = 1;
+	else if(op==4 && R[r2]<R[r3]) R[r1] = 1;
 	else R[r1] = 0;
 	return instruction+1;
 }
@@ -385,8 +385,8 @@ int main()
 	int R[32]={0},memory[1<<18];
 	int instruction = 0;
 	int end_of_instruction = 0; 
-	freopen("input.txt", "r", stdin);
-	freopen("out.txt","w",stdout);
+	//freopen("input.txt", "r", stdin);
+	//freopen("out.txt","w",stdout);
 	string instruction_string;
 	while(getline(cin,instruction_string))
 	{
