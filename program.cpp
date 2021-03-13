@@ -8,7 +8,7 @@ using namespace std;
 
 void print_registers(int R[])
 {
-	cout<<"$ze :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
+	cout<<hex<<"$ze :"<<R[0]<<endl<<"$at :"<<R[1]<<endl<<"$v0 :"<<R[2]<<endl<<"$v1 :"<<R[3]<<endl<<"$a0 :"<<R[4]<<endl;
 	cout<<"$a1 :"<<R[5]<<endl<<"$a2 :"<<R[6]<<endl<<"$a3 :"<<R[7]<<endl<<"$t0 :"<<R[8]<<endl<<"$t1 :"<<R[9]<<endl;
 	cout<<"$t2 :"<<R[10]<<endl<<"$t3 :"<<R[11]<<endl<<"$t4 :"<<R[12]<<endl<<"$t5 :"<<R[13]<<endl<<"$t6 :"<<R[14]<<endl;
 	cout<<"$t7 :"<<R[15]<<endl<<"$s0 :"<<R[16]<<endl<<"$s1 :"<<R[17]<<endl<<"$s2 :"<<R[18]<<endl<<"$s3 :"<<R[19]<<endl;
@@ -370,12 +370,12 @@ int decode_d(int memory[],int R[],int instruction,int op,int end_of_instruction)
 	int offset = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-	
-	if(R[r2]+(offset/4)>=(1<<18) || (R[r2]+(offset/4)==(1<<18)-1 && offset%4!=0) || (R[r2] + (offset/4)<=end_of_instruction)) 
+	int address = 4*R[r2] + offset;
+	if(address>=((1<<20) - 4)&& (address<=4*end_of_instruction)) 
 	{throw invalid_argument("Unexpected inputw");}
 		
-	if(op==8) take_data(memory,R,r1,R[r2]+(offset/4),offset%4)	;		        
-	else if(op==9) enter_data(memory,R[r2]+(offset/4),offset%4,R[r1]) ;			
+	if(op==8) take_data(memory,R,r1,address/4,address%4)	;		        
+	else if(op==9) enter_data(memory,address/4,address%4,R[r1]) ;			
 	
 	return instruction+1;
 }
@@ -408,10 +408,10 @@ int main()
 		else if(type==5||type==6||type==10) instruction = decode_b(memory_instruction,R,instruction,type);
 		else if(type==7)instruction = decode_c(memory_instruction,R,instruction,type);
 		else if (type ==8 || type == 9)instruction = decode_d(memory,R,instruction,type,end_of_instruction);
-		else instruction+=1;
+		else {instruction+=1;clock_cycles --;}
 		print_registers(R);
 	}
-	cout << "Clock cycles Elapsed: " << clock_cycles<<"\n";
+	cout <<dec<< "Clock cycles Elapsed: " << clock_cycles<<"\n";
 	for(int i=0;i<frequency.size();i++)
 	{
 		cout << "instruction at line_number " <<i<<" ran for " << frequency[i] <<" time(s)\n";
