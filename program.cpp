@@ -370,7 +370,7 @@ int decode_d(int memory[],int R[],int instruction,int op,int end_of_instruction)
 	int offset = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-	int address = 4*R[r2] + offset;
+	int address = R[r2] + 4*offset;
 	if(address>=((1<<20) - 4)&& (address<=4*end_of_instruction)) 
 	{throw invalid_argument("Unexpected inputw");}
 		
@@ -416,5 +416,6 @@ int main()
 	{
 		cout << "instruction at line_number " <<i<<" ran for " << frequency[i] <<" time(s)\n";
 	}
+	//cout<<memory[250]<<" "<<memory[251]<<" "<<memory[252]<<" "<<memory[253];
 	return 0;
 }
