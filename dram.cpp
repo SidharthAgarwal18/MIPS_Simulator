@@ -168,7 +168,7 @@ void type_a(string name,int memory[][256],int instruction,int pos)	//for add
 	if(pos<n) throw invalid_argument("Unexpected inputa");				//no trash character allowed after instruction
 }
 
-void type_b(string name,int memory[][256],int instruction,int pos)				//for beq bne addi
+void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
 {
 	int n = name.length();
 	int r;
@@ -221,6 +221,19 @@ void type_b(string name,int memory[][256],int instruction,int pos)				//for beq 
 	if(address > (1<<15)) throw invalid_argument("Unexpected input "+to_string(instruction)+"address greater than 2^15-1");
 	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + address; //address(or no. for addition)is stored in the 15 least sig. bits		
 }
+
+void type_c(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> labels)
+{
+	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
+	string name_label;
+	int first = pos;
+	while(pos<n && (int(name[pos])!=9 && int(name[pos])!=32)) pos++;
+	name_label = name.substr(first,pos-first);
+
+	if(labels.find(name_label)==labels.end()) throw invalid_argument("label not found in the program");
+
+	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + labels[name_labels];
+}	
 
 void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and sw
 {
@@ -284,14 +297,67 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 		
 }
 
-void read_and_save_instruction(string instruction_string,int memory[][256],int instruction)
+void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> labels)
+{
+	int n = name.length();
+	int r;
+	string reg;
+
+	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	
+	if(pos+2>=n) throw invalid_argument("Unexpected inputb");			//substring for register should pe possible
+	reg = name.substr(pos,3);
+	r = R_index(reg);
+	if(r==0) pos += 2;
+	if(r == -1) throw invalid_argument("Unexpected inputa");
+	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
+	pos +=3;
+	
+	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	if(pos==n) throw invalid_argument("Unexpected inputc");				//input length smaller.
+	if(int(name[pos]) == 44)
+	{
+		pos++;
+		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	}
+	else throw invalid_argument("Unexpected inputd");
+	
+	if(pos+2>=n) throw invalid_argument("Unexpected inpute");			//substring for register should pe possible
+	reg = name.substr(pos,3);
+	r = R_index(reg);
+	if(r==0) pos += 2;
+	if(r==-1) throw invalid_argument("Unexpected inputb");
+	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
+	pos += 3;
+
+	//cerr << name[pos];
+	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	if(pos==n) throw invalid_argument("Unexpected inputf");				//input length smaller.
+	if(int(name[pos]) == 44)
+	{	
+		pos++;
+		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
+	}
+	else throw invalid_argument("Unexpected inputgxys");
+	
+	if(pos==n) throw invalid_argument("Unexpected inputh");				//input length smaller.
+
+	string name_label = name.substr(pos,n-pos);
+	if(labels.find(name_label)==labels.end()) throw invalid_argument("label not found in the program");
+
+	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + labels[name_labels];
+}
+
+void read_and_save_instruction(string instruction_string,int memory[][256],int instruction,unordered_map<string,int> labels)
 {
 	pair<int,int> temp = map_instruction(instruction_string,instruction,memory);
 	int type = temp.first;
 	int pos = temp.second;
-	if(type==1) type_a(instruction_string,memory,instruction,pos);
+	if(type==1 || type==2 || type==3 || type ==4) type_a(instruction_string,memory,instruction,pos);
 	else if(type==10) type_b(instruction_string,memory,instruction,pos);
+	else if (type==7)type_c(instruction_string,memory,instruction,pos,labels);
 	else if(type==8 || type==9)type_d(instruction_string,memory,instruction,pos);
+	else (type==5 || type==6)type_e(instruction_string,memory,instruction,pos,labels);
 }
 
 int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,map<int,string> hash)
@@ -323,6 +389,15 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 
 	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
 	return instruction+1;
+}
+
+int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle)
+{
+	int instruction = ((1<<16)-1) & (memory_instruction);
+	if(instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
+
+	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<instruction<<endl;
+	return instruction;		//correct this.
 }
 
 void take_data(int buffer[],int R[],int r1,int location,int remainder)
@@ -392,6 +467,21 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_in
 	return instruction+1;
 }
 
+int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,map<int,string> hash)
+{
+	int next_instruction = ((1<<16)-1) & (memory_instruction);
+	int r2 = ((1<<5)-1) & (memory_instruction>>16);
+	int r1 = ((1<<5)-1) & (memory_instruction>>21);
+
+	if(busy[r1]==1 || busy[r2]==1) return instruction;
+
+	if(op==6 && R[r1]==R[r2]) return next_instruction;
+	else if(op==5 && R[r1]!=R[r2]) return next_instruction;
+
+	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<next_instruction<<endl;
+	return instruction+1;
+}
+
 void work_done(int memory_instruction,int busy[],int R_used[])
 {
 	int s;
@@ -452,13 +542,34 @@ void delete_node(Node* target,Node* tail)
 	return;
 }
 
+string return_label(string name)
+{
+	int pos = 0;
+	int n = instruction_string.length();
+	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
+
+	if(pos>=n || name[pos]==':') throw invalid_argument("Unexpected label");
+
+	string label;
+	int first = pos;
+	while(pos<n && name[pos]!=':') pos++;
+	label = name.substr(first,pos-first);
+	pos++;
+	while(pos<n &&(int(name[pos])==9||int(name[pos])==32)) pos++;
+
+	if(pos<n) throw invalid_argument("Unexpected label");
+}
+
 int main(int argc,char** argv)
 {
 	int R[32]={0};
 	int memory[1024][256]={0};
 	int buffer[256] = {0};
 	int busy[32] = {0};
+	unordered_map<string,int> labels;
 
+	int main_instruction = -1;
+	int exit_instruction = 0;
 	int row_delay,col_delay,dummy,variable;
 	int cycle = 1;
 	int buffer_row = -1;
@@ -496,16 +607,25 @@ int main(int argc,char** argv)
 
 	freopen("input.txt", "r", stdin);
 	freopen("out.txt","w",stdout);
-	string instruction_string;
 
+	string instruction_string;
+	string name_label;
 	while(getline(cin,instruction_string))
 	{
-		read_and_save_instruction(instruction_string,memory,instruction);
+		if(instruction_string.find(":") != string::npos)
+		{
+			name_label = return_label(instruction_string);
+			map[name_label] = instruction;
+			if(name_label=="main") main_instruction = instruction;
+			if(name_label=="exit") exit_instruction = instruction;
+		}
+		else read_and_save_instruction(instruction_string,memory,instruction,labels);
 		instruction++;
 	}
 	end_of_instruction = instruction;
 	instruction = 0;
-	
+	if(labels.find("main")==labels.end() || labels.find("exit")==labels.end()) throw invalid_argument("Either of main or eixt label is missing")
+
 	int R_used[end_of_instruction+1];
 
 	while(instruction<end_of_instruction && instruction >=0)
@@ -573,6 +693,7 @@ int main(int argc,char** argv)
 		cycle++;	
 		max_cycle = max(max_cycle,cycle);	
 	}
+	
 	write_row(memory,buffer,buffer_row);
 	cout<<endl<<"Total cycles executed : "<<max_cycle-1<<endl<<"Total buffer row updates : "<<row_updates;
 	return 0;
