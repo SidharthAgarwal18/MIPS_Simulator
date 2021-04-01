@@ -1,0 +1,4 @@
+--Now does not count empty line in instruction.
+--12 is the type of label instruction.
+--errors debugged
+--algorithm coded more.
