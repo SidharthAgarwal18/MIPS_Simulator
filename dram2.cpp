@@ -369,6 +369,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 	//int op = ((1<<5)-1) & (memory_instruction>>26);
 	
+	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]==2) return instruction;			//if either of them is busy dont move forward
 
 	if(op==1) R[r1] = R[r2] + R[r3];
@@ -388,6 +389,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
+	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r2]==1 || busy[r1]==1 || busy[r1]==2) return instruction;							//if either of them is busy dont move forward
 	
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
@@ -418,6 +420,7 @@ void take_data(int buffer[],int R[],int r1,int location,int remainder)
 		case 2: R[r1] = (buffer[location] <<16)+ ((buffer[location+1]>>16)&((1<<16) - 1));break;
 		case 3: R[r1] = (buffer[location] <<24)+ ((buffer[location+1]>>8)&((1<<24) - 1));break;
 	}
+	if(r1==0 && R[r1]!=0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	return ;
 }
 
@@ -446,7 +449,7 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_instruction,int busy[],int R_used[],int buffer[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_instruction,int busy[],pair<int,int> R_used[],int buffer[])
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -457,7 +460,8 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_in
 	//busy[r2] = 1;												//design  decision.
 	if(op==8)busy[r1] = 1;						//only r1 is locked for lw and permanently 
 	else busy[r1] = 2;							//value of r2 can be accessed but not changed
-	R_used[instruction] = r1;
+	R_used[instruction].first = r1;
+	R_used[instruction].second = R_used[instruction].second + 1;
 
 	int sign = (memory_instruction & (1<<15));
 
@@ -496,11 +500,11 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	return instruction+1;
 }
 
-void work_done(int memory_instruction,int busy[],int R_used[])
+void work_done(int memory_instruction,int busy[],pair<int,int> R_used[])
 {
-	int s;
-	s = R_used[memory_instruction];		
-	busy[s] = 0;
+	int s = R_used[memory_instruction].first;
+	if(R_used[memory_instruction].second==1) busy[s] = 0;		//unbusy ony when there was single occurence of the instruction
+	else R_used[memory_instruction].second = R_used[memory_instruction].second -1;
 	return ;
 }
 
@@ -593,6 +597,7 @@ int main(int argc,char** argv)
 	int busy[32] = {0};
 	unordered_map<string,int> label;				//maps label to their instruction number.
 
+	bool blocked = false;							//tells wheather there is need to run from dubly linked list or not
 	int main_instruction = -1;
 	int exit_instruction = 0;						//here program will terminate.
 	int row_delay,col_delay,dummy,variable;
@@ -630,15 +635,15 @@ int main(int argc,char** argv)
 	int instruction = 0;
 	int end_of_instruction = 0; 			//will be equal to exit_instruction+1
 
-	string instruction_string;
+	string instruction_string1;
 	string name_label;
 
 	freopen("input.txt", "r", stdin);			//first reading for reading labels
-	while(getline(cin,instruction_string))
+	while(getline(cin,instruction_string1))
 	{
-		if(instruction_string.find(":") != string::npos)
+		if(instruction_string1.find(":") != string::npos)
 		{
-			name_label = return_label(instruction_string);
+			name_label = return_label(instruction_string1);
 			if(label.find(name_label)!=label.end()) throw invalid_argument("Same label repeated");
 
 			label[name_label] = instruction;
@@ -646,26 +651,27 @@ int main(int argc,char** argv)
 			if(name_label=="main") main_instruction = instruction;
 			if(name_label=="exit") exit_instruction = instruction;
 		}
-		if(is_emptyline(instruction_string)==false)	instruction++;
+		if(is_emptyline(instruction_string1)==false)	instruction++;
 	}
-	fclose(stdin);
 	if(label.find("main")==label.end() || label.find("exit")==label.end()) 
 	{throw invalid_argument("Either of main or eixt label is missing");}
 
-	freopen("input.txt","r",stdin);
-	freopen("out.txt","w",stdout);
+	fclose(stdin);
 	instruction = 0;
-	while(getline(cin,instruction_string))
+	freopen("input.txt", "r", stdin);
+	freopen("out.txt","w",stdout);
+	string instruction_string;
+	while(getline(cin,instruction_string))			//second reading of the file for normal instructions.
 	{
 		if(instruction_string.find(":") == string::npos)
 		{read_and_save_instruction(instruction_string,memory,instruction,label);}
 		else if(is_emptyline(instruction_string)==true) instruction--;
 		instruction++;
 	}
-	end_of_instruction = instruction;			//now program ends at exit label.
-	instruction = 0;
+	end_of_instruction = instruction;			   
+	instruction = main_instruction+1;
 	
-	int R_used[end_of_instruction+1];
+	pair<int,int> R_used[end_of_instruction+1];	//first contains the register in use, second contains the number of times instruction appeared due to loops.
 	while(instruction<end_of_instruction && instruction >=0)
 	{
 		if(max_cycle==cycle)
@@ -682,13 +688,14 @@ int main(int argc,char** argv)
 
 				cout<<"line number "<<p.first<<" : cycle"<<cycle<<" - "<<max_cycle-1;
 				if(memory[p.first/256][p.first%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
+				{cout<<": "<<hash[(R_used[instruction].first)]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction])]<<endl;
+				cout<<R[(R_used[instruction].first)]<<endl;
 
+				blocked = false;		//if not false then will be made true again in this cycle.
 				cycle++;
 			}
-			else if(head!=tail)
+			else if(head!=tail && blocked==true) //run only when instructions are not moving forward otherwise wait for same row lw/sw
 			{
 				write_row(memory,buffer,buffer_row);
 
@@ -702,36 +709,43 @@ int main(int argc,char** argv)
 				max_cycle = cycle + row_delay + row_delay + col_delay+1;
 
 				cout<<"cycle "<<cycle<< ": DRAM request issued "<<endl;
-				cout<<"line number"<<temp->data<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
+				cout<<"line number "<<temp->data<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
 				if(memory[temp->data/256][temp->data%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
+				{cout<<": "<<hash[(R_used[instruction].first)]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction])]<<endl;
+				cout<<R[(R_used[instruction].first)]<<endl;
 
+				blocked = false;
 				cycle++;
 			}
 		}
 
 		int memory_instruction = memory[instruction/256][instruction%256];
 		int type = ((1<<5)-1) & (memory_instruction>>26);
-		int address;
-	
+		int prev_instruction = instruction;
+		
 		// instruction is incremented only if "instruction" has been executed.
 		if(type==1 || type==2 || type==3 || type==4) instruction = decode_a(memory_instruction,R,instruction,type,busy,cycle,hash);
 		else if(type==10) instruction = decode_b(memory_instruction,R,instruction,type,busy,cycle,hash);
 		else if(type==7) instruction = decode_c(memory_instruction,end_of_instruction,instruction,cycle);
 		else if ((type ==8 || type == 9))
 		{
-			temp = new Node(instruction);
-			same_row[buffer_row].push(make_pair(instruction,temp));
-			tail->next = temp;
-			temp->prev = tail;
-			tail = tail->next;
+			if(instruction!=decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer))
+			{
+				temp = new Node(instruction);
+				same_row[buffer_row].push(make_pair(instruction,temp));
+
+				tail->next = temp;						//insertion in doubly linked list....
+				temp->prev = tail;
+				tail = tail->next;
+			}
 		}
 		else if(type==5 || type==6) instruction = decode_e(memory_instruction,R,instruction,type,busy,cycle,hash);
 		else if (type==12) instruction = instruction+1;
 		
 		if(instruction==exit_instruction) break;
+		if(prev_instruction==instruction) blocked = true;	//maybe there is a need to change the row buffer....
+
 		cycle++;	
 		max_cycle = max(max_cycle,cycle);	
 	}
