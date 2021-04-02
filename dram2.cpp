@@ -634,15 +634,20 @@ int main(int argc,char** argv)
 	int instruction = 0;
 	int end_of_instruction = 0; 			//will be equal to exit_instruction+1
 
-	string instruction_string1;
+	string instruction_string;
+	//string instruction_string;
 	string name_label;
 
-	freopen("input.txt", "r", stdin);			//first reading for reading labels
-	while(getline(cin,instruction_string1))
+	ifstream cinstrm("testcase1.txt");			//first reading for reading labels
+	//cerr << "HII";
+	while(getline(cinstrm,instruction_string))
 	{
-		if(instruction_string1.find(":") != string::npos)		// ":" found
+		//cerr << "ab";
+		if(instruction_string.find(":") != string::npos)		// ":" found
 		{
-			name_label = return_label(instruction_string1);
+			//cerr << "a";
+			name_label = return_label(instruction_string);
+			cerr << name_label;
 			if(label.find(name_label)!=label.end()) throw invalid_argument("Same label repeated");
 
 			label[name_label] = instruction;
@@ -650,17 +655,18 @@ int main(int argc,char** argv)
 			if(name_label=="main") main_instruction = instruction;
 			if(name_label=="exit") exit_instruction = instruction;
 		}
-		if(is_emptyline(instruction_string1)==false)	instruction++;
+		else if(is_emptyline(instruction_string)==false)	instruction++;
 	}
+	cerr << "HI";
 	if(label.find("main")==label.end() || label.find("exit")==label.end()) 
 	{throw invalid_argument("Either of main or eixt label is missing");}
 
-	fclose(stdin);
 	instruction = 0;
-	freopen("input.txt", "r", stdin);
+	cinstrm.close();
+	cinstrm.open("testcase1.txt");
 	freopen("out.txt","w",stdout);
-	string instruction_string;
-	while(getline(cin,instruction_string))			//second reading of the file for normal instructions.
+	
+	while(getline(cinstrm,instruction_string))			//second reading of the file for normal instructions.
 	{
 		if(instruction_string.find(":") == string::npos)	//no :
 		{read_and_save_instruction(instruction_string,memory,instruction,label);}
