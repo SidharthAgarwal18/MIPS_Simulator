@@ -370,7 +370,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	//int op = ((1<<5)-1) & (memory_instruction>>26);
 	
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]==2) return instruction;			//if either of them is busy dont move forward
+	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;			//if either of them is busy dont move forward
 
 	if(op==1) R[r1] = R[r2] + R[r3];
 	else if(op==2) R[r1] = R[r2] - R[r3];
@@ -390,7 +390,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r2]==1 || busy[r1]==1 || busy[r1]==2) return instruction;							//if either of them is busy dont move forward
+	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;							//if either of them is busy dont move forward
 	
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
 	if(sign!=0) R[r1] = R[r2] - address;
@@ -449,20 +449,19 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_instruction,int busy[],pair<int,int> R_used[],int buffer[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_instruction,int busy[],int R_used[],int buffer[])
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
-	if(busy[r2]==1 || busy[r1]==1 || (busy[r2]==2 && op==8) || (busy[r1]==2 && op==8)) return instruction;
+	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) return instruction;
 
 	//busy[r2] = 1;												//design  decision.
 	if(op==8)busy[r1] = 1;						//only r1 is locked for lw and permanently 
-	else busy[r1] = 2;							//value of r2 can be accessed but not changed
-	R_used[instruction].first = r1;
-	R_used[instruction].second = R_used[instruction].second + 1;
-
+	else busy[r1] = busy[r1]+2;							//value of r2 can be accessed but not changed
+	R_used[instruction] = r1;
+	
 	int sign = (memory_instruction & (1<<15));
 
 	int address;
@@ -500,11 +499,11 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	return instruction+1;
 }
 
-void work_done(int memory_instruction,int busy[],pair<int,int> R_used[])
+void work_done(int memory_instruction,int busy[],int R_used[])
 {
-	int s = R_used[memory_instruction].first;
-	if(R_used[memory_instruction].second==1) busy[s] = 0;		//unbusy ony when there was single occurence of the instruction
-	else R_used[memory_instruction].second = R_used[memory_instruction].second -1;
+	int s = R_used[memory_instruction];
+	if(busy[s]==1) busy[s] = 0;		//unbusy ony when there was single occurence of the instruction
+	else if(busy[s]>0)busy[s] = busy[s] - 2;
 	return ;
 }
 
@@ -641,7 +640,7 @@ int main(int argc,char** argv)
 	freopen("input.txt", "r", stdin);			//first reading for reading labels
 	while(getline(cin,instruction_string1))
 	{
-		if(instruction_string1.find(":") != string::npos)
+		if(instruction_string1.find(":") != string::npos)		// ":" found
 		{
 			name_label = return_label(instruction_string1);
 			if(label.find(name_label)!=label.end()) throw invalid_argument("Same label repeated");
@@ -663,7 +662,7 @@ int main(int argc,char** argv)
 	string instruction_string;
 	while(getline(cin,instruction_string))			//second reading of the file for normal instructions.
 	{
-		if(instruction_string.find(":") == string::npos)
+		if(instruction_string.find(":") == string::npos)	//no :
 		{read_and_save_instruction(instruction_string,memory,instruction,label);}
 		else if(is_emptyline(instruction_string)==true) instruction--;
 		instruction++;
@@ -671,12 +670,12 @@ int main(int argc,char** argv)
 	end_of_instruction = instruction;			   
 	instruction = main_instruction+1;
 	
-	pair<int,int> R_used[end_of_instruction+1];	//first contains the register in use, second contains the number of times instruction appeared due to loops.
+	int R_used[end_of_instruction+1];	
 	while(instruction<end_of_instruction && instruction >=0)
 	{
 		if(max_cycle==cycle)
 		{
-			if(buffer_row>=0 && same_row[buffer_row].size()>0)
+			if(buffer_row>=0 && same_row[buffer_row].size()>0) 
 			{
 				max_cycle = cycle + col_delay;
 				p = same_row[buffer_row].front();
@@ -688,9 +687,9 @@ int main(int argc,char** argv)
 
 				cout<<"line number "<<p.first<<" : cycle"<<cycle<<" - "<<max_cycle-1;
 				if(memory[p.first/256][p.first%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction].first)]<<" = ";}
+				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction].first)]<<endl;
+				cout<<R[(R_used[instruction])]<<endl;
 
 				blocked = false;		//if not false then will be made true again in this cycle.
 				cycle++;
@@ -711,9 +710,9 @@ int main(int argc,char** argv)
 				cout<<"cycle "<<cycle<< ": DRAM request issued "<<endl;
 				cout<<"line number "<<temp->data<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
 				if(memory[temp->data/256][temp->data%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction].first)]<<" = ";}
+				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction].first)]<<endl;
+				cout<<R[(R_used[instruction])]<<endl;
 
 				blocked = false;
 				cycle++;
