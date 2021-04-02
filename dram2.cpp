@@ -3,38 +3,10 @@
 #include <string.h>
 #include <stdexcept>
 using namespace std;
+#include "basics.hpp"
+#include "encode_instructions.hpp"
+#include "decode_instructions.hpp"
 
-struct Node
-{
-	int data;
-	Node* next;
-	Node* prev;
-	Node()
-	{
-		data = 0;
-	}
-	Node(int x)
-	{
-		data = x;
-	}
-};
-
-int StringtoNumber(string name,int instruction)
-{
-	int number = 0;
-	int digit = 0;
-	int pos = 0;
-	int n = name.length();
-	while(pos<n && name[pos]-'0'>=0 && name[pos] -'9'<=0)
-	{
-		digit = name[pos] - '0';
-		number = 10*number + digit; 
-		pos++;	
-	}
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected input " + to_string(instruction) + " : Not all digits");		//no garbage character allowed before, b/w and after number.
-	return number;
-}
 
 
 pair<int,int> map_instruction(string name, int instruction,int memory[][256])
@@ -66,289 +38,6 @@ pair<int,int> map_instruction(string name, int instruction,int memory[][256])
 	return make_pair(0,0);												//for empty line....
 }
 
-int strCmp(string s1,string s2)
-{
-	if(s1==s2)
-		return 0;
-	return 1;
-}
-
-int R_index(string name)
-{
-	if(strCmp(name,"$ze")==0) return 0;
-	else if(strCmp(name,"$at")==0) return 1;
-	else if(strCmp(name,"$v0")==0) return 2;
-	else if(strCmp(name,"$v1")==0) return 3;
-	else if(strCmp(name,"$a0")==0) return 4;
-	else if(strCmp(name,"$a1")==0) return 5;
-	else if(strCmp(name,"$a2")==0) return 6;
-	else if(strCmp(name,"$a3")==0) return 7;
-	else if(strCmp(name,"$t0")==0) return 8;
-	else if(strCmp(name,"$t1")==0) return 9;
-	else if(strCmp(name,"$t2")==0) return 10;
-	else if(strCmp(name,"$t3")==0) return 11;
-	else if(strCmp(name,"$t4")==0) return 12;
-	else if(strCmp(name,"$t5")==0) return 13;
-	else if(strCmp(name,"$t6")==0) return 14;
-	else if(strCmp(name,"$t7")==0) return 15;
-	else if(strCmp(name,"$s0")==0) return 16;
-	else if(strCmp(name,"$s1")==0) return 17;
-	else if(strCmp(name,"$s2")==0) return 18;
-	else if(strCmp(name,"$s3")==0) return 19;
-	else if(strCmp(name,"$s4")==0) return 20;
-	else if(strCmp(name,"$s5")==0) return 21;
-	else if(strCmp(name,"$s6")==0) return 22;
-	else if(strCmp(name,"$s7")==0) return 23;
-	else if(strCmp(name,"$t8")==0) return 24;
-	else if(strCmp(name,"$t9")==0) return 25;
-	else if(strCmp(name,"$k0")==0) return 26;
-	else if(strCmp(name,"$k1")==0) return 27;
-	else if(strCmp(name,"$gp")==0) return 28;
-	else if(strCmp(name,"$sp")==0) return 29;
-	else if(strCmp(name,"$fp")==0) return 30;
-	else if(strCmp(name,"$ra")==0) return 31;
-	return -1;
-}
-
-void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt,mult,addi
-{
-	int n = name.length();
-	int r;
-	string reg;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-			
-	if(pos+2>=n) throw invalid_argument("Unexpected input1");			//substring for register should pe possible
-	
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected input2");			//no valid register
-	
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
-	pos +=3;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
-	if(pos==n) throw invalid_argument("Unexpected input3");				//input length smaller.
-	
-	if(int(name[pos]) == 44) 							//1 comma after register1
-	{	
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected input4");
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected input5");			//substring for register should pe possible
-	reg = name.substr(pos,3);							//register2
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
-	pos += 3;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//{ws+}{,}{ws+}
-	if(pos==n) throw invalid_argument("Unexpected input6");				//input length smaller.
-	
-	if(int(name[pos]) == 44) 
-	{
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected input7");
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected input8");			//substring for register should pe possible
-	reg = name.substr(pos,3);							//register3			
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<11);
-	pos += 3;
-
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected inputa");				//no trash character allowed after instruction
-}
-
-void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
-{
-	int n = name.length();
-	int r;
-	string reg;
-
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inputb");			//substring for register should pe possible
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
-	pos +=3;
-	
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos==n) throw invalid_argument("Unexpected inputc");				//input length smaller.
-	if(int(name[pos]) == 44)
-	{
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected inputd");
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inpute");			//substring for register should pe possible
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
-	pos += 3;
-
-	//cerr << name[pos];
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos==n) throw invalid_argument("Unexpected inputf");				//input length smaller.
-	if(int(name[pos]) == 44)
-	{	
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected inputgxys");
-	
-	if(pos==n) throw invalid_argument("Unexpected inputh");				//input length smaller.
-
-	if(name[pos]==45)														//sign bit is stored in 16th bit
-	{memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] +(1<<15); pos++;}
-	
-
-	int address = StringtoNumber(name.substr(pos,n-pos),instruction);
-	if(address > (1<<15)) throw invalid_argument("Unexpected input "+to_string(instruction)+"address greater than 2^15-1");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + address; //address(or no. for addition)is stored in the 15 least sig. bits		
-}
-
-void type_c(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label)
-{
-	int n = name.length();
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-	
-	string name_label;
-	int first = pos;
-	while(pos<n && (int(name[pos])!=9 && int(name[pos])!=32)) pos++;
-	name_label = name.substr(first,pos-first);
-
-	if(label.find(name_label)==label.end()) throw invalid_argument("label not found in the program");
-
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + label[name_label];
-}	
-
-void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and sw
-{
-	int n = name.length();
-	int r;
-	string reg;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inputj");			//substring for register should pe possible
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");			//no valid register
-	
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
-	pos +=3;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
-	if(pos==n) throw invalid_argument("Unexpected inputk");				//input length smaller.
-	if(int(name[pos]) == 44) 							//1 comma after register1
-	{	
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected inputl");
-
-	if(name[pos]==45)														//sign bit is stored in 16th bit
-	{memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] +(1<<15); pos++;}
-	
-	int number_end = pos;
-	while(number_end<n && name[number_end]-'0'>=0 && name[number_end] -'9'<=0) number_end++;
-	if(number_end==pos || number_end==n) throw invalid_argument("Unexpected inputm");
-	
-	int offset = StringtoNumber(name.substr(pos,number_end-pos),instruction);
-	if(offset > (1<<15)) throw invalid_argument("Unexpected input "+to_string(instruction)+" |offset| greater than 2^15");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + offset;
-	
-	pos = number_end;
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos==n || name[pos]!=40) throw invalid_argument("Unexpected inputn");	//left parenthesis shoudl be present
-	pos = pos +1;
-	
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inputo");			//substring for register should pe possible
-	
-	reg = name.substr(pos,3);							//register2
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r==-1) throw invalid_argument("Unexpected inputp");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
-	pos += 3;
-	
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	
-	if(pos==n || name[pos]!=41) throw invalid_argument("Unexpected inputq");
-	pos = pos+1;
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected inputa");				//no trash character allowed after instruction
-		
-}
-
-void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label)
-{
-	int n = name.length();
-	int r;
-	string reg;
-
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inputb");			//substring for register should pe possible
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
-	pos +=3;
-	
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos==n) throw invalid_argument("Unexpected inputc");				//input length smaller.
-	if(int(name[pos]) == 44)
-	{
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected inputd");
-	
-	if(pos+2>=n) throw invalid_argument("Unexpected inpute");			//substring for register should pe possible
-	reg = name.substr(pos,3);
-	r = R_index(reg);
-	if(r==0) pos += 2;
-	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
-	pos += 3;
-
-	//cerr << name[pos];
-	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos==n) throw invalid_argument("Unexpected inputf");				//input length smaller.
-	if(int(name[pos]) == 44)
-	{	
-		pos++;
-		while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	}
-	else throw invalid_argument("Unexpected inputgxys");
-	
-	if(pos==n) throw invalid_argument("Unexpected inputh");				//input length smaller.
-
-	string name_label = name.substr(pos,n-pos);
-	if(label.find(name_label)==label.end()) throw invalid_argument("label not found in the program");
-
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + label[name_label];
-}
 
 void read_and_save_instruction(string instruction_string,int memory[][256],int instruction,unordered_map<string,int> label)
 {
@@ -362,142 +51,6 @@ void read_and_save_instruction(string instruction_string,int memory[][256],int i
 	else if (type==5 || type==6)type_e(instruction_string,memory,instruction,pos,label);
 }
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,map<int,string> hash)
-{
-	int r3 = ((1<<5)-1) & (memory_instruction>>11);
-	int r2 = ((1<<5)-1) & (memory_instruction>>16);
-	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-	//int op = ((1<<5)-1) & (memory_instruction>>26);
-	
-	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;			//if either of them is busy dont move forward
-
-	if(op==1) R[r1] = R[r2] + R[r3];
-	else if(op==2) R[r1] = R[r2] - R[r3];
-	else if(op==3) R[r1] = R[r2]*R[r3];
-	else if(op==4 && R[r2]<R[r3]) R[r1] = 1;
-	else R[r1] = 0;
-
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
-
-	return instruction+1;
-}
-
-int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,map<int,string> hash)
-{
-	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
-	int r2 = ((1<<5)-1) & (memory_instruction>>16);
-	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-
-	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;							//if either of them is busy dont move forward
-	
-	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
-	if(sign!=0) R[r1] = R[r2] - address;
-	else R[r1] = R[r2] + address;
-
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
-	return instruction+1;
-}
-
-int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle)
-{
-	int new_instruction = ((1<<26)-1) & (memory_instruction);
-	if(new_instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
-
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<new_instruction<<endl;
-	return new_instruction;		//correct this.
-}
-
-void take_data(int buffer[],int R[],int r1,int location,int remainder)
-{
-	if(remainder==0) {R[r1] = buffer[location];return ;}
-
-	if(location==255) throw invalid_argument("cannot access memory from two rows at same time");
-	switch(remainder)
-	{
-		case 1: R[r1] = (buffer[location] <<8) + ((buffer[location+1]>>24)&((1<<8) - 1));break;
-		case 2: R[r1] = (buffer[location] <<16)+ ((buffer[location+1]>>16)&((1<<16) - 1));break;
-		case 3: R[r1] = (buffer[location] <<24)+ ((buffer[location+1]>>8)&((1<<24) - 1));break;
-	}
-	if(r1==0 && R[r1]!=0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	return ;
-}
-
-void enter_data(int buffer[],int location,int remainder,int value)
-{
-	if(remainder==0) {buffer[location] = value; return;}
-	
-	if(location==255) throw invalid_argument("cannot access memory from two rows at same time");
-
-	int value1 = buffer[location];
-	int value2 = buffer[location+1];
-	switch(remainder)
-	{
-		case 1: buffer[location] = ((value1>>24)<<24) + value>>8;
-			buffer[location+1] = ((value & ((1<<8)-1))<<24) + (value2 & ((1<<24)-1));
-			break;		
-		case 2:
-			buffer[location] = ((value1>>16)<<16) + value>>16;
-			buffer[location+1] = ((value & ((1<<16)-1))<<16) + (value2 & ((1<<16)-1));
-			break;
-		case 3: 
-			buffer[location] = ((value1>>8)<<8) + value>>24;
-			buffer[location+1] = ((value & ((1<<24)-1))<<8) + (value2 & ((1<<8)-1));
-			break;
-	}
-	return ;
-}
-
-int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_instruction,int busy[],int R_used[],int buffer[])
-{
-	int offset = ((1<<15)-1) & (memory_instruction);
-	int r2 = ((1<<5)-1) & (memory_instruction>>16);
-	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-
-	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) return instruction;
-
-	//busy[r2] = 1;												//design  decision.
-	if(op==8)busy[r1] = 1;						//only r1 is locked for lw and permanently 
-	else busy[r1] = busy[r1]+2;							//value of r2 can be accessed but not changed
-	R_used[instruction] = r1;
-	
-	int sign = (memory_instruction & (1<<15));
-
-	int address;
-	if(sign!=0) address = R[r2] - 4*offset;
-	else address = R[r2] + 4*offset;
-
-	if(address/4>=((1<<18)) || (address/4<=end_of_instruction) || address<0) 
-	{throw invalid_argument("Unexpected inputw "+to_string(instruction)+" because of either access of encoded instruction data in memory or address not in memory size");}
-		
-	if(op==8) take_data(buffer,R,r1,(address/4)%256,address%4)	;		        
-	else if(op==9) enter_data(buffer,(address/4)%256,address%4,R[r1]) ;			
-	
-	return instruction+1;
-}
-
-int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,map<int,string> hash)
-{
-	int next_instruction = ((1<<16)-1) & (memory_instruction);
-	int r2 = ((1<<5)-1) & (memory_instruction>>16);
-	int r1 = ((1<<5)-1) & (memory_instruction>>21);
-
-	if(busy[r1]==1 || busy[r2]==1) return instruction;
-
-	if(op==6 && R[r1]==R[r2]) 
-	{
-		cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<next_instruction<<endl;
-		return next_instruction;
-	}
-	else if(op==5 && R[r1]!=R[r2]) 
-	{
-		cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<next_instruction<<endl;
-		return next_instruction;
-	}
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<instruction+1<<endl;
-	return instruction+1;
-}
 
 void work_done(int memory_instruction,int busy[],int R_used[])
 {
@@ -525,68 +78,6 @@ int address_of_instruction(int memory_instruction,int R[],int end_of_instruction
 	return address;
 }
 
-void copy_row(int memory[][256],int buffer[],int buffer_row)
-{
-	for(int i=0;i<256;i++)
-	{
-		buffer[i] = memory[buffer_row][i];
-	}
-}
-
-void write_row(int memory[][256],int buffer[],int buffer_row)
-{
-	for(int i=0;i<256;i++)
-	{
-		memory[buffer_row][i] = buffer[i];
-	}
-}
-
-void delete_node(Node* target,Node* tail)
-{
-	if(target==tail)
-	{
-		tail = tail->prev;
-		tail->next = NULL;
-	}
-	else
-	{
-		target->next->prev = target->prev;
-		target->prev->next = target->next;
-		target->prev = NULL;
-		target->next = NULL;
-	}
-	target = tail;
-	return;
-}
-
-string return_label(string name)
-{
-	int pos = 0;
-	int n = name.length();
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-
-	if(pos>=n || name[pos]==':') throw invalid_argument("Unexpected label");
-
-	string label;
-	int first = pos;
-	while(pos<n && name[pos]!=':') pos++;
-	label = name.substr(first,pos-first);
-	pos++;
-	while(pos<n &&(int(name[pos])==9||int(name[pos])==32)) pos++;
-
-	if(pos<n) throw invalid_argument("Unexpected label");
-	return label;
-}
-
-bool is_emptyline(string name)					//nowonwards empty line is not counted in instruction.
-{
-	int n = name.length();
-	int pos = 0;
-
-	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
-	if(pos<n) return false;
-	return true;
-}
 
 int main(int argc,char** argv)
 {
@@ -647,19 +138,19 @@ int main(int argc,char** argv)
 		{
 			//cerr << "a";
 			name_label = return_label(instruction_string);
-			cerr << name_label;
+			//cerr << name_label;
 			if(label.find(name_label)!=label.end()) throw invalid_argument("Same label repeated");
 
 			label[name_label] = instruction;
-			memory[instruction/256][instruction%256] = (12>>26);	 //for instructions with label.
+			memory[instruction/256][instruction%256] = (0>>26);	 //for instructions with label.
 			if(name_label=="main") main_instruction = instruction;
 			if(name_label=="exit") exit_instruction = instruction;
 		}
 		else if(is_emptyline(instruction_string)==false)	instruction++;
 	}
-	cerr << "HI";
+	//cerr << "HI";
 	if(label.find("main")==label.end() || label.find("exit")==label.end()) 
-	{throw invalid_argument("Either of main or eixt label is missing");}
+	{throw invalid_argument("Either of main or exit label is missing");}
 
 	instruction = 0;
 	cinstrm.close();
@@ -746,7 +237,7 @@ int main(int argc,char** argv)
 			}
 		}
 		else if(type==5 || type==6) instruction = decode_e(memory_instruction,R,instruction,type,busy,cycle,hash);
-		else if (type==12) instruction = instruction+1;
+		else if (type==0 || type == 12) instruction = instruction+1;
 		
 		if(instruction==exit_instruction) break;
 		if(prev_instruction==instruction) blocked = true;	//maybe there is a need to change the row buffer....
@@ -757,5 +248,6 @@ int main(int argc,char** argv)
 	
 	write_row(memory,buffer,buffer_row);
 	cout<<endl<<"Total cycles executed : "<<max_cycle-1<<endl<<"Total buffer row updates : "<<row_updates;
+	cerr <<"HI";
 	return 0;
 }
