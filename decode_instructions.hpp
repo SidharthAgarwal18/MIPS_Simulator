@@ -114,7 +114,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_in
 	else address = R[r2] + 4*offset;
 
 	if(address/4>=((1<<18)) || (address/4<=end_of_instruction) || address<0) 
-	{throw invalid_argument("Unexpected inputw "+to_string(instruction)+" because of either access of encoded instruction data in memory or address not in memory size");}
+	{throw invalid_argument("Unexpected inputwsdank "+to_string(instruction)+" because of either access of encoded instruction data in memory or address not in memory size");}
 		
 	if(op==8) take_data(buffer,R,r1,(address/4)%256,address%4)	;		        
 	else if(op==9) enter_data(buffer,(address/4)%256,address%4,R[r1]) ;			

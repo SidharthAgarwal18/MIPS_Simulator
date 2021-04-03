@@ -64,7 +64,7 @@ void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt
 	pos += 3;
 
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected inputa");				//no trash character allowed after instruction
+	if(pos<n) throw invalid_argument("Unexpected inputatype_a");				//no trash character allowed after instruction
 }
 
 void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
@@ -79,7 +79,7 @@ void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
 	reg = name.substr(pos,3);
 	r = R_index(reg);
 	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");
+	if(r == -1) throw invalid_argument("Unexpected inputatype_b");
 	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
 	pos +=3;
 	
@@ -148,7 +148,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	reg = name.substr(pos,3);
 	r = R_index(reg);
 	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");			//no valid register
+	if(r == -1) throw invalid_argument("Unexpected inputatype_d");			//no valid register
 	
 	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
 	pos +=3;
@@ -194,7 +194,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	if(pos==n || name[pos]!=41) throw invalid_argument("Unexpected inputq");
 	pos = pos+1;
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
-	if(pos<n) throw invalid_argument("Unexpected inputa");				//no trash character allowed after instruction
+	if(pos<n) throw invalid_argument("Unexpected type_d");				//no trash character allowed after instruction
 		
 }
 
@@ -210,7 +210,7 @@ void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<
 	reg = name.substr(pos,3);
 	r = R_index(reg);
 	if(r==0) pos += 2;
-	if(r == -1) throw invalid_argument("Unexpected inputa");
+	if(r == -1) throw invalid_argument("Unexpected inputatype_e");
 	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
 	pos +=3;
 	

@@ -52,11 +52,13 @@ void read_and_save_instruction(string instruction_string,int memory[][256],int i
 }
 
 
-void work_done(int memory_instruction,int busy[],int R_used[])
+void work_done(int instruction,int busy[],int R_used[])
 {
-	int s = R_used[memory_instruction];
+	int s = R_used[instruction];
+
 	if(busy[s]==1) busy[s] = 0;		//unbusy ony when there was single occurence of the instruction
-	else if(busy[s]>0)busy[s] = busy[s] - 2;
+	else if(busy[s]>0) busy[s] = busy[s] - 2;
+
 	return ;
 }
 
@@ -73,7 +75,7 @@ int address_of_instruction(int memory_instruction,int R[],int end_of_instruction
 	else address = R[r2] + 4*offset;
 
 	if(address/4>=((1<<18)) || (address/4<=end_of_instruction) || address<0) 
-	{throw invalid_argument("Unexpected inputw because of either access of encoded instruction data in memory or memory size");}
+	{throw invalid_argument("Unexpected inputw " + to_string(memory_instruction)+" because of either access of encoded instruction data in memory or memory size");}
 	
 	return address;
 }
@@ -94,7 +96,7 @@ int main(int argc,char** argv)
 	int cycle = 1;
 	int buffer_row = -1;
 	int row_updates = 0;
-	int max_cycle = 0;				//for cycle=max_cycle DRAM will be free for new operation.
+	int max_cycle = 1;				//for cycle=max_cycle DRAM will be free for new operation.
 	//int num_sw = 0; 				//for checing if there is need for writing back to memory from buffer.
 
 	if(argc<3 || argc>3)			//default values...
@@ -122,7 +124,7 @@ int main(int argc,char** argv)
 	hash[16] = "$s0";hash[17] = "$s1";hash[18] = "$s2";hash[19] = "$s3";hash[20] = "$s4";hash[21] = "$s5";hash[22] = "$s6";hash[23] = "$s7";
 	hash[24] = "$t8";hash[25] = "$t9";hash[26] = "$k0";hash[27] = "$k1";hash[28] = "$gp";hash[29] = "$sp";hash[30] = "$fp";hash[31] = "$ra";
 
-	int instruction = 0;
+	int instruction = -1;
 	int end_of_instruction = 0; 			//will be equal to exit_instruction+1
 
 	string instruction_string;
@@ -141,10 +143,9 @@ int main(int argc,char** argv)
 			//cerr << name_label;
 			if(label.find(name_label)!=label.end()) throw invalid_argument("Same label repeated");
 
-			label[name_label] = instruction;
-			memory[instruction/256][instruction%256] = (0>>26);	 //for instructions with label.
-			if(name_label=="main") main_instruction = instruction;
-			if(name_label=="exit") exit_instruction = instruction;
+			label[name_label] = instruction+1;				//labels are not stored.
+			if(name_label=="main") main_instruction = instruction+1;
+			if(name_label=="exit") exit_instruction = instruction+1;
 		}
 		else if(is_emptyline(instruction_string)==false)	instruction++;
 	}
@@ -159,34 +160,38 @@ int main(int argc,char** argv)
 	
 	while(getline(cinstrm,instruction_string))			//second reading of the file for normal instructions.
 	{
-		if(instruction_string.find(":") == string::npos)	//no :
-		{read_and_save_instruction(instruction_string,memory,instruction,label);}
-		else if(is_emptyline(instruction_string)==true) instruction--;
-		instruction++;
+		if(instruction_string.find(":") == string::npos && (is_emptyline(instruction_string)==false))	//no :
+		{read_and_save_instruction(instruction_string,memory,instruction,label);instruction++;}
 	}
-	end_of_instruction = instruction;			   
-	instruction = main_instruction+1;
+
+	end_of_instruction = instruction+1;			   
+	instruction = main_instruction;
 	
-	int R_used[end_of_instruction+1];	
+	int R_used[end_of_instruction+1] = {0};
+	//int iterations = 0;
+
 	while(instruction<end_of_instruction && instruction >=0)
 	{
 		if(max_cycle==cycle)
 		{
 			if(buffer_row>=0 && same_row[buffer_row].size()>0) 
 			{
+				//cout<<"yo "<<cycle;
 				max_cycle = cycle + col_delay;
 				p = same_row[buffer_row].front();
 				same_row[buffer_row].pop();
-				work_done(memory[p.first/256][p.first%256],busy,R_used);
-				delete_node(p.second,tail);
+				dummy = p.first;
+				work_done(dummy,busy,R_used);			//work done takes instruction number as input not instruction itself
+				temp = p.second;
+				delete_node(temp,tail);
 
-				variable = address_of_instruction(memory[p.first/256][p.first%256],R,end_of_instruction);
+				variable = address_of_instruction(memory[dummy/256][dummy%256],R,end_of_instruction);
 
 				cout<<"line number "<<p.first<<" : cycle"<<cycle<<" - "<<max_cycle-1;
-				if(memory[p.first/256][p.first%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
+				if(memory[dummy/256][dummy%256]>>26 & ((1<<5)-1) == 8)
+				{cout<<": "<<hash[(R_used[dummy])]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction])]<<endl;
+				cout<<R[(R_used[dummy])]<<endl;
 
 				blocked = false;		//if not false then will be made true again in this cycle.
 				cycle++;
@@ -196,26 +201,29 @@ int main(int argc,char** argv)
 				write_row(memory,buffer,buffer_row);
 
 				temp = head->next;
+				dummy = temp->data;
 				delete_node(temp,tail);
-				work_done(memory[temp->data/256][temp->data%256],busy,R_used);
-				variable = (address_of_instruction(memory[temp->data/256][temp->data%256],R,end_of_instruction));
+				work_done(dummy,busy,R_used);
+
+				variable = (address_of_instruction(memory[dummy/256][dummy%256],R,end_of_instruction));
 				buffer_row = variable/1024;
+				copy_row(memory,buffer,buffer_row);
 				same_row[buffer_row].pop();
 
 				max_cycle = cycle + row_delay + row_delay + col_delay+1;
 
 				cout<<"cycle "<<cycle<< ": DRAM request issued "<<endl;
-				cout<<"line number "<<temp->data<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
-				if(memory[temp->data/256][temp->data%256]>>26 & ((1<<5)-1) == 8)
-				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
+				cout<<"line number "<<dummy<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
+				if(memory[dummy/256][dummy%256]>>26 & ((1<<5)-1) == 8)
+				{cout<<": "<<hash[(R_used[dummy])]<<" = ";}
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
-				cout<<R[(R_used[instruction])]<<endl;
+				cout<<R[(R_used[dummy])]<<endl;
 
 				blocked = false;
 				cycle++;
 			}
 		}
-
+		
 		int memory_instruction = memory[instruction/256][instruction%256];
 		int type = ((1<<5)-1) & (memory_instruction>>26);
 		int prev_instruction = instruction;
@@ -226,28 +234,115 @@ int main(int argc,char** argv)
 		else if(type==7) instruction = decode_c(memory_instruction,end_of_instruction,instruction,cycle);
 		else if ((type ==8 || type == 9))
 		{
-			if(instruction!=decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer))
+			if(buffer_row==-1)
 			{
+				variable = address_of_instruction(memory_instruction,R,end_of_instruction);
+				buffer_row = variable/1024;
+				copy_row(memory,buffer,buffer_row);
+				decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer);
+				max_cycle = max_cycle + row_delay + col_delay;
+
+				cout<<"line number "<<instruction<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
+				cout<<"line number "<<instruction<<" : cycle "<<cycle+1<<" - "<<max_cycle-1;
+				if(memory[instruction/256][instruction%256]>>26 & ((1<<5)-1) == 8)
+				{cout<<": "<<hash[(R_used[instruction])]<<" = ";}
+				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
+				//cerr<<R_used[instruction]<<endl;
+				cout<<R[(R_used[instruction])]<<endl;
+				instruction++;				
+			}
+			else if(instruction!=decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer))
+			{
+				variable = address_of_instruction(memory_instruction,R,end_of_instruction);
 				temp = new Node(instruction);
-				same_row[buffer_row].push(make_pair(instruction,temp));
+				same_row[(variable/1024)].push(make_pair(instruction,temp));
 
 				tail->next = temp;						//insertion in doubly linked list....
 				temp->prev = tail;
 				tail = tail->next;
+				tail->next = NULL;
+
+				instruction++;
+				//cout<<instruction<<endl;
 			}
+
 		}
 		else if(type==5 || type==6) instruction = decode_e(memory_instruction,R,instruction,type,busy,cycle,hash);
 		else if (type==0 || type == 12) instruction = instruction+1;
 		
 		if(instruction==exit_instruction) break;
 		if(prev_instruction==instruction) blocked = true;	//maybe there is a need to change the row buffer....
-
+		cerr<<blocked;
 		cycle++;	
 		max_cycle = max(max_cycle,cycle);	
+		//iterations++;
+		
 	}
 	
-	write_row(memory,buffer,buffer_row);
+	while(head!=tail)
+	{
+		if(max_cycle==cycle)
+		{
+			if(buffer_row>=0 && same_row[buffer_row].size()>0) 
+			{
+				//cerr<<buffer_row;
+				//cout<<"yo "<<cycle;
+				max_cycle = cycle + col_delay;
+				p = same_row[buffer_row].front();
+				same_row[buffer_row].pop();
+				dummy = p.first;
+				work_done(dummy,busy,R_used);			//work done takes instruction number as input not instruction itself
+				temp = p.second;
+				delete_node(temp,tail);
+
+				variable = address_of_instruction(memory[dummy/256][dummy%256],R,end_of_instruction);
+
+				cout<<"line number "<<p.first<<" : cycle"<<cycle<<" - "<<max_cycle-1;
+				if(memory[dummy/256][dummy%256]>>26 & ((1<<5)-1) == 8)
+				{cout<<": "<<hash[(R_used[dummy])]<<" = ";}
+				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
+				cout<<R[(R_used[dummy])]<<endl;
+
+				blocked = false;		//if not false then will be made true again in this cycle.
+				cycle++;
+			}
+			else  //run only when instructions are not moving forward otherwise wait for same row lw/sw
+			{
+				//cerr<<buffer_row;
+				write_row(memory,buffer,buffer_row);
+
+				temp = head->next;
+				dummy = temp->data;
+				delete_node(temp,tail);
+				work_done(dummy,busy,R_used);
+
+				//for(int i=0;i<14;i++) cerr<<memory[i/256][i%256]<<endl;
+				//cerr<<dummy<<memory[7/256][7%256];
+				variable = (address_of_instruction(memory[dummy/256][dummy%256],R,end_of_instruction));
+				//cerr<<"yo";
+				buffer_row = variable/1024;
+				copy_row(memory,buffer,buffer_row);
+				same_row[buffer_row].pop();
+
+				max_cycle = cycle + row_delay + row_delay + col_delay+1;
+
+				cout<<"cycle "<<cycle<< ": DRAM request issued "<<endl;
+				cout<<"line number "<<dummy<<" : cycles "<<cycle+1<<" - "<<max_cycle-1;
+				if(memory[dummy/256][dummy%256]>>26 & ((1<<5)-1) == 8)
+				{cout<<": "<<hash[(R_used[dummy])]<<" = ";}
+				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
+				cout<<R[(R_used[dummy])]<<endl;
+
+				blocked = false;
+				cycle++;
+				
+			}
+		}
+		cycle = max(max_cycle,cycle);	
+		blocked = true;
+	}
+	
 	cout<<endl<<"Total cycles executed : "<<max_cycle-1<<endl<<"Total buffer row updates : "<<row_updates;
-	cerr <<"HI";
+	//cerr <<"HI";
 	return 0;
 }
