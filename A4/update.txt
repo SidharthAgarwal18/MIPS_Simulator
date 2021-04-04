@@ -1,5 +1,8 @@
-1) print DRAM request initiated.
-2) first row-buffer print
-3) row_buffers
+Remember never write back for the buffer_row = -1
+
+1) print DRAM request initiated whenever row changes
+2) first row-buffer print correction.
+3) row_buffers in the end
 4) final max cycles printing
+5) If now sw then no nead to write back in row buffer.
 
