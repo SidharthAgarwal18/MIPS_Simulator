@@ -97,6 +97,7 @@ int main(int argc,char** argv)
 	int buffer_row = -1;
 	int row_updates = 0;
 	int max_cycle = 1;				//for cycle=max_cycle DRAM will be free for new operation.
+	bool first_time = -1;
 	//int num_sw = 0; 				//for checing if there is need for writing back to memory from buffer.
 
 	if(argc<3 || argc>3)			//default values...
@@ -168,13 +169,18 @@ int main(int argc,char** argv)
 	instruction = main_instruction;
 	
 	int R_used[end_of_instruction+1] = {0};
-	//int iterations = 0;
+	int iterations = 0;
 
 	while(instruction<end_of_instruction && instruction >=0)
 	{
 		if(max_cycle==cycle)
 		{
-			if(buffer_row>=0 && same_row[buffer_row].size()>0) 
+			if(first_time!=-1)
+			{
+				work_done(first_time,busy,R_used);
+				first_time = -1;
+			}
+			else if(buffer_row>=0 && same_row[buffer_row].size()>0) 
 			{
 				//cout<<"yo "<<cycle;
 				max_cycle = cycle + col_delay;
@@ -234,6 +240,7 @@ int main(int argc,char** argv)
 		else if(type==7) instruction = decode_c(memory_instruction,end_of_instruction,instruction,cycle);
 		else if ((type ==8 || type == 9))
 		{
+			if(first_time)
 			if(buffer_row==-1)
 			{
 				variable = address_of_instruction(memory_instruction,R,end_of_instruction);
@@ -249,6 +256,7 @@ int main(int argc,char** argv)
 				else cout<<": memory address "<<variable<<"-"<<variable+3<<" = ";
 				//cerr<<R_used[instruction]<<endl;
 				cout<<R[(R_used[instruction])]<<endl;
+				first_time = instruction;
 				instruction++;				
 			}
 			else if(instruction!=decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer))
@@ -272,13 +280,20 @@ int main(int argc,char** argv)
 		
 		if(instruction==exit_instruction) break;
 		if(prev_instruction==instruction) blocked = true;	//maybe there is a need to change the row buffer....
-		cerr<<blocked;
+		cerr<<instruction<<endl;
 		cycle++;	
 		max_cycle = max(max_cycle,cycle);	
-		//iterations++;
+		iterations++;
+		if(iterations==500){cout<<"Timeout1";break;}
 		
 	}
 	
+	if(first_time==-1)
+	{
+		work_done(first_time,busy,R_used);
+		first_time = -1;
+	}
+
 	while(head!=tail)
 	{
 		if(max_cycle==cycle)
@@ -340,6 +355,8 @@ int main(int argc,char** argv)
 		}
 		cycle = max(max_cycle,cycle);	
 		blocked = true;
+		iterations++;
+		if(iterations==500){cout<<"Timeout2";break;}
 	}
 	
 	cout<<endl<<"Total cycles executed : "<<max_cycle-1<<endl<<"Total buffer row updates : "<<row_updates;
