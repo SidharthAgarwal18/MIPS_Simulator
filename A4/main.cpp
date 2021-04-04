@@ -341,6 +341,6 @@ int main(int argc,char* argv[])
 		row_updates++;	
 	}
 
-	cout<<"\nTotal number of cycles : "<<cycle-1<<endl<<"Total number of row buffer updates : "<<row_updates<<endl;
+	cout<<"\nTotal number of cycles : "<<max(cycle,rec_cycle)-1<<endl<<"Total number of row buffer updates : "<<row_updates<<endl;
 	return 0;
 }
