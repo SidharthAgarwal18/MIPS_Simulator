@@ -1,0 +1,5 @@
+1) print DRAM request initiated.
+2) first row-buffer print
+3) row_buffers
+4) final max cycles printing
+
