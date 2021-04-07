@@ -164,10 +164,10 @@ int main(int argc,char* argv[])
 				if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
-					req_cycle = cycle + 2*row_delay+ col_delay;
+					req_cycle = cycle + 2*row_delay+ col_delay+1;
 					row_updates++;
 				}
-				else req_cycle = cycle + row_delay+ col_delay;
+				else req_cycle = cycle + row_delay+ col_delay+1;
 
 				buffer_row = add/1024;
 				same_row[buffer_row].pop();
@@ -206,7 +206,7 @@ int main(int argc,char* argv[])
 				copy_row(memory,buffer,row);
 				buffer_row = row;
 
-				req_cycle = cycle + row_delay +col_delay;
+				req_cycle = cycle + row_delay +col_delay+1;
 				decode_d(memory_instruction,R,instruction,type,end_of_instruction,busy,R_used,buffer);
 				
 				if(type==9) {num_sw++;row_updates++;}
@@ -309,10 +309,10 @@ int main(int argc,char* argv[])
 				if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
-					req_cycle = cycle + 2*row_delay+ col_delay;
+					req_cycle = cycle + 2*row_delay+ col_delay+1;
 					row_updates++;
 				}
-				else req_cycle = cycle + row_delay+ col_delay;
+				else req_cycle = cycle + row_delay+ col_delay+1;
 
 				buffer_row = add/1024;
 				same_row[buffer_row].pop();
@@ -342,7 +342,7 @@ int main(int argc,char* argv[])
 	if(num_sw!=0)
 	{
 		write_row(memory,buffer,buffer_row);
-		req_cycle = cycle + 2*row_delay+ col_delay;
+		req_cycle = cycle + 2*row_delay+ col_delay+1;
 		row_updates++;	
 	}
 
