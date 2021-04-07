@@ -11,15 +11,18 @@ using namespace std;
 struct Node
 {
 	int data;
+	int saved_address;
 	Node* next;
 	Node* prev;
 	Node()
 	{
 		data = 0;
+		saved_address = 0;
 	}
 	Node(int x)
 	{
 		data = x;
+		saved_address = 0;
 	}
 };
 
@@ -60,6 +63,7 @@ int main(int argc,char* argv[])
 	hash[8] = "$t0";hash[9] = "$t1";hash[10] = "$t2";hash[11] = "$t3";hash[12] = "$t4";hash[13] = "$t5";hash[14] = "$t6";hash[15] = "$t7";
 	hash[16] = "$s0";hash[17] = "$s1";hash[18] = "$s2";hash[19] = "$s3";hash[20] = "$s4";hash[21] = "$s5";hash[22] = "$s6";hash[23] = "$s7";
 	hash[24] = "$t8";hash[25] = "$t9";hash[26] = "$k0";hash[27] = "$k1";hash[28] = "$gp";hash[29] = "$sp";hash[30] = "$fp";hash[31] = "$ra";
+
 	if(argc<3 || argc>3)			//default values...
 	{
 		row_delay = 10;
@@ -125,6 +129,7 @@ int main(int argc,char* argv[])
 				int ins = temp->data;
 				prev_dram_ins = ins;
 
+				int add = temp->saved_address;
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
 
@@ -132,8 +137,7 @@ int main(int argc,char* argv[])
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 
 				req_cycle = cycle + col_delay;
-				int add = address_of_instruction(memory_instruction,R,end_of_instruction);
-
+				
 				cout<<"line number "<<ins<<" : cycle "<<cycle<<" - "<<req_cycle-1;
 				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
@@ -151,12 +155,12 @@ int main(int argc,char* argv[])
 				int ins = temp-> data;
 				prev_dram_ins = ins;
 
+				int add = temp->saved_address;
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
 
 				int memory_instruction = memory[ins/256][ins%256];
-				int add = address_of_instruction(memory_instruction,R,end_of_instruction);
-				
+								
 				if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
@@ -227,6 +231,7 @@ int main(int argc,char* argv[])
 					//cout<<instruction<<endl;
 					int add = address_of_instruction(memory_instruction,R,end_of_instruction);
 					Node* temp = new Node(instruction);
+					temp->saved_address = add;
 
 					if(type==9) row_updates++;
 
@@ -270,6 +275,8 @@ int main(int argc,char* argv[])
 				int ins = temp->data;
 				prev_dram_ins = ins;
 
+				int add = temp->saved_address;
+
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
 
@@ -277,8 +284,7 @@ int main(int argc,char* argv[])
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 
 				req_cycle = cycle + col_delay;
-				int add = address_of_instruction(memory_instruction,R,end_of_instruction);
-
+				
 				cout<<"line number "<<ins<<" : cycle "<<cycle<<" - "<<req_cycle-1;
 
 				if((memory_instruction>>26 & ((1<<5)-1))== 8)
@@ -294,13 +300,13 @@ int main(int argc,char* argv[])
 				Node* temp = head -> next;
 				int ins = temp-> data;
 				prev_dram_ins = ins;
-
+saved_address
+				int add = temp->saved_address;
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
 	
 				int memory_instruction = memory[ins/256][ins%256];
-				int add = address_of_instruction(memory_instruction,R,end_of_instruction);
-				
+								
 				if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
