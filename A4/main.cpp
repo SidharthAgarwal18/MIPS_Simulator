@@ -300,7 +300,6 @@ int main(int argc,char* argv[])
 				Node* temp = head -> next;
 				int ins = temp-> data;
 				prev_dram_ins = ins;
-saved_address
 				int add = temp->saved_address;
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
