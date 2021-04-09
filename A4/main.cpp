@@ -248,6 +248,7 @@ int main(int argc,char* argv[])
 		}
 		else throw invalid_argument("Unexpected memory instruction");
 		if(instruction == prev_instruction) {blocked = true;cycle = req_cycle-1;}
+		if(instruction==exit_instruction) break;
 		else blocked = false;
 
 		cycle ++;
