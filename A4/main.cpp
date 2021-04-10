@@ -344,7 +344,7 @@ int main(int argc,char* argv[])
 	{
 		write_row(memory,buffer,buffer_row);
 		req_cycle = cycle + row_delay+1;
-		cout << "Final writeback to memory : cycle "<<cycle <<" - " <<req_cycle<<endl;
+		cout << "Final writeback to memory : cycle "<<cycle+1 <<" - " <<req_cycle-1<<endl;
 		row_updates++;	
 	}
 
