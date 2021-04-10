@@ -343,7 +343,8 @@ int main(int argc,char* argv[])
 	if(num_sw!=0)
 	{
 		write_row(memory,buffer,buffer_row);
-		req_cycle = cycle + 2*row_delay+ col_delay+1;
+		req_cycle = cycle + row_delay+1;
+		cout << "Final writeback to memory : cycle "<<cycle <<" - " <<req_cycle<<endl;
 		row_updates++;	
 	}
 
