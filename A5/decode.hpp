@@ -6,7 +6,7 @@
 using namespace std;
 #include "basic.hpp"
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[])
+int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins)
 {
 	int r3 = ((1<<5)-1) & (memory_instruction>>11);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -14,7 +14,8 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	//int op = ((1<<5)-1) & (memory_instruction>>26);
 	
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;			//if either of them is busy dont move forward
+	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 			//if either of them is busy dont move forward
+	{return instruction;}
 
 	if(op==1) R[r1] = R[r2] + R[r3];
 	else if(op==2) R[r1] = R[r2] - R[r3];
@@ -22,34 +23,36 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	else if(op==4 && R[r2]<R[r3]) R[r1] = 1;
 	else R[r1] = 0;
 
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
+	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
 
 	return instruction+1;
 }
 
-int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[])
+int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins)
 {
 	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) return instruction;							//if either of them is busy dont move forward
 	
+	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 							//if either of them is busy dont move forward
+	{return instruction;}
+
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
 	if(sign!=0) R[r1] = R[r2] - address;
 	else R[r1] = R[r2] + address;
 
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
+	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
 	return instruction+1;
 }
 
-int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle)
+int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle,int core,int ref_ins)
 {
 	int new_instruction = ((1<<26)-1) & (memory_instruction);
 	if(new_instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
 
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<new_instruction<<endl;
+	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<new_instruction - ref_ins<<endl;
 	return new_instruction;		//correct this.
 }
 
@@ -99,7 +102,8 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_in
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
-	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) return instruction;
+	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) 
+	{return instruction;}
 
 	//busy[r2] = 1;												//design  decision.
 	if(op==8)busy[r1] = 1;						//only r1 is locked for lw and permanently 
@@ -121,7 +125,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int end_of_in
 	return instruction+1;
 }
 
-int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[])
+int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins)
 {
 	int next_instruction = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -131,14 +135,14 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 
 	if(op==6 && R[r1]==R[r2]) 
 	{
-		cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<next_instruction<<endl;
+		cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
 		return next_instruction;
 	}
 	else if(op==5 && R[r1]!=R[r2]) 
 	{
-		cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<next_instruction<<endl;
+		cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
 		return next_instruction;
 	}
-	cout<<"line number "<<instruction<<": cycle "<<cycle<<": "<<"jumped to line number"<<instruction+1<<endl;
+	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<instruction+1 - ref_ins<<endl;
 	return instruction+1;
 }

@@ -1,8 +1,9 @@
 main:
-	addi $t0,$t1,19
+	addi $t0,$t1,1000
+	lw $t4,0($t0)
 	slt $t3,$zero,$t0
-	beq $zero,$zero,noob
 	addi $t0,$t1,19
+	j noob
 noob:
 	addi $t0,$t1,19
 exit:

@@ -1,13 +1,21 @@
-line number 0: cycle 1: $t0 = 19
-line number 5: cycle 1: $t0 = 20
-line number 10: cycle 1: $t0 = 21
-line number 1: cycle 2: $t3 = 1
-line number 6: cycle 2: $t3 = 1
-line number 11: cycle 2: $t3 = 1
-line number 2: cycle 3: jumped to line number4
-line number 7: cycle 3: jumped to line number9
-line number 12: cycle 3: jumped to line number14
-line number 4: cycle 4: $t0 = 19
-line number 9: cycle 4: $t0 = 19
-line number 14: cycle 4: $t0 = 19
-Terminated
+core number :0 line number 0: cycle 1: $t0 = 1000
+core number :1 line number 0: cycle 1: $t0 = 2000
+core number :2 line number 0: cycle 1: $t0 = 900
+core :0 line number 1 : cycle 2: DRAM request issued 
+core :0 line number 1 : cycle 3 - 14: $t4 = 0
+core number :1 line number 1: cycle 2: $t3 = 1
+core number :2 line number 1: cycle 2: $t3 = 1
+core number :0 line number 2: cycle 3: $t3 = 1
+core number :0 line number 3: cycle 4: $t0 = 19
+core number :1 line number 3: cycle 4: jumped to line number 5
+core number :2 line number 3: cycle 4: jumped to line number 5
+core number :0 line number 4: cycle 5: jumped to line number 5
+core number :1 line number 5: cycle 5: $t0 = 19
+core number :2 line number 5: cycle 5: $t0 = 19
+core number :0 line number 5: cycle 6: $t0 = 19
+core :2 line number 2 : cycle 15 - 16: $t4 = 0
+core :1 line number 2 : cycle 17: DRAM request issued 
+core :1 line number 2 : cycle 18 - 29: $t4 = 0
+
+Total number of cycles : 30
+Total number of row buffer updates : 0
