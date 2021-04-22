@@ -143,8 +143,6 @@ int main(int argc,char* argv[])
 	{	
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
-			empty_dram = true;
-
 			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
 			{free(prev_dram_ins,R_used,busy[(core_of_ins[prev_dram_ins])]);prev_dram_ins = -1;}
 
@@ -171,8 +169,8 @@ int main(int argc,char* argv[])
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 				cout<<R[ins][(R_used[ins])]<<endl;
 
-				empty_dram = false;					//dram is busy.
-				cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
+				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
+				empty_dram = false;
 				continue;
 			}
 			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
@@ -210,10 +208,11 @@ int main(int argc,char* argv[])
 				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 
+				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
 				empty_dram = false;
-				cycle++;
 				continue;
 			}
+			empty_dram = true;
 		}
 		for(int I=0;I<N;I++)		//processing each core
 		{
@@ -323,7 +322,6 @@ int main(int argc,char* argv[])
 				cout<<R[ins][(R_used[ins])]<<endl;
 
 				empty_dram = false;					//dram is busy.
-				cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
 				continue;
 			}
 			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
@@ -362,11 +360,20 @@ int main(int argc,char* argv[])
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 
 				empty_dram = false;
-				cycle++;
 				continue;
 			}
 		}
 		cycle = max(req_cycle,cycle+1);
 	}
+
+	cout<<endl;
+	for(int i=0;i<N;i++)
+	{
+		if(core_remaining.find(i)!=core_remaining.end())
+		{cout<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
+		else
+		{cout<<"Core : "<<i<<" completed successfully"<<endl;}
+	}
+
 	cout<<"\nTotal number of cycles : "<<min(max(cycle,req_cycle)-1,M)<<endl<<"Total number of row buffer updates : "<<row_updates<<endl;
 }
