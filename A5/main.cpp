@@ -44,7 +44,7 @@ int main(int argc,char* argv[])
 		row_delay = 10;
 		col_delay = 2;		
 		N = 3;
-		M = 200;
+		M = 150;
 	}
 	else
 	{
@@ -85,6 +85,9 @@ int main(int argc,char* argv[])
 	int prev_dram_ins = -1;
 	string instruction_string;
 	int instruction2 = 0;
+
+	int pending_instruction =-1;
+	int pending_finish = -1;
 
 	vector<int> core_of_ins;			//stores core number of instruction and gives in O(1)
 	freopen("out.txt","w",stdout);
@@ -161,8 +164,17 @@ int main(int argc,char* argv[])
 				int memory_instruction = memory[ins/256][ins%256];
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;		//if sw instruction.
 
-				req_cycle = cycle + col_delay;		
-				
+				req_cycle = cycle + col_delay;
+
+				if(req_cycle>M)
+				{
+					pending_instruction = ins;
+					pending_finish = req_cycle;
+					if(empty_dram) cycle++;
+					empty_dram = false;
+					break;
+				}
+
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;	//for printing.
 				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
@@ -197,6 +209,15 @@ int main(int argc,char* argv[])
 				same_row[buffer_row].pop();
 				copy_row(memory,buffer,buffer_row);
 
+				if(req_cycle>M)
+				{
+					pending_instruction = ins;
+					pending_finish = req_cycle;
+					if(empty_dram) cycle++;
+					empty_dram = false;
+					break;
+				}				
+
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
 
@@ -212,7 +233,7 @@ int main(int argc,char* argv[])
 				empty_dram = false;
 				continue;
 			}
-			empty_dram = true;
+			else empty_dram = true;
 		}
 		for(int I=0;I<N;I++)		//processing each core
 		{
@@ -239,17 +260,24 @@ int main(int argc,char* argv[])
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
 						decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer);
 						
-						if(type==9) {num_sw++;row_updates++;}			//check for need for write_back
-
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
-						cout<<"core :"<<(core_of_ins[(cur_instruction[I])])<<" line number "<<cur_instruction[I] - start[(core_of_ins[(cur_instruction[I])])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;		
-						cout<<"core :"<<(core_of_ins[(cur_instruction[I])])<<" line number "<<cur_instruction[I] - start[(core_of_ins[(cur_instruction[I])])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
+						if(req_cycle<=M)
+						{	
+							if(type==9) {num_sw++;row_updates++;}			//check for need for write_back
 
-						if((memory_instruction>>26 & ((1<<5)-1)) == 8)		//different print for lw and sw.
-						{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
-						else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-						cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
+							cout<<"core :"<<(core_of_ins[(cur_instruction[I])])<<" line number "<<cur_instruction[I] - start[(core_of_ins[(cur_instruction[I])])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;		
+							cout<<"core :"<<(core_of_ins[(cur_instruction[I])])<<" line number "<<cur_instruction[I] - start[(core_of_ins[(cur_instruction[I])])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
 
+							if((memory_instruction>>26 & ((1<<5)-1)) == 8)		//different print for lw and sw.
+							{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
+							else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
+							cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
+						}
+						else
+						{
+							pending_instruction = cur_instruction[I];
+							pending_finish = req_cycle;
+						}
 						empty_dram = false;								//dram is not empty.
 						cur_instruction[I]++;							//instruction will always run because first and dram is empty
 					}
@@ -284,7 +312,7 @@ int main(int argc,char* argv[])
 		}
 
 		cycle++;
-		req_cycle = max(req_cycle,cycle); //to ensure rec_cyle>=cycle.
+		req_cycle = max(req_cycle,cycle); //to ensure req_cycle>=cycle.
 		
 	}
 	
@@ -292,8 +320,6 @@ int main(int argc,char* argv[])
 	{
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
-			empty_dram = true;
-
 			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
 			{free(prev_dram_ins,R_used,busy[(core_of_ins[prev_dram_ins])]);prev_dram_ins = -1;}
 
@@ -316,6 +342,15 @@ int main(int argc,char* argv[])
 				
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;	//for printing.
 				
+				if(req_cycle>M)
+				{
+					pending_instruction = ins;
+					pending_finish = req_cycle;
+					if(empty_dram) cycle++;
+					empty_dram = false;
+					break;
+				}
+
 				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
@@ -348,6 +383,15 @@ int main(int argc,char* argv[])
 				same_row[buffer_row].pop();
 				copy_row(memory,buffer,buffer_row);
 
+				if(req_cycle>M)
+				{
+					pending_instruction = ins;
+					pending_finish = req_cycle;
+					if(empty_dram) cycle++;
+					empty_dram = false;
+					break;
+				}
+
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
 
@@ -362,11 +406,31 @@ int main(int argc,char* argv[])
 				empty_dram = false;
 				continue;
 			}
+			else empty_dram = true;
 		}
 		cycle = max(req_cycle,cycle+1);
 	}
 
 	cout<<endl;
+	if(pending_instruction!=-1)
+	{cout<<"Instruction : "<<pending_instruction<<" of core : "<<core_of_ins[pending_instruction]<<" has not completed in execution and will ";
+	cout<<"finish at cycle : "<<pending_finish<<endl;}
+
+	cout<<"The instructions remaining in dram which have not been executed are \n";
+	int first = 0;
+	while(head->next->data != -1)
+	{	
+		first = 1;
+		Node* temp = head -> next;		//selection for next row instruction.
+				
+		int ins = temp-> data;
+		
+		temp->prev->next = temp->next;
+		temp->next->prev = temp->prev;
+		cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<endl;
+	}
+	if(first==0){cout<<"NONE\n\n";}
+
 	for(int i=0;i<N;i++)
 	{
 		if(core_remaining.find(i)!=core_remaining.end())

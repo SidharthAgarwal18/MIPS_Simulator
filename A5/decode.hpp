@@ -23,7 +23,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	else if(op==4 && R[r2]<R[r3]) R[r1] = 1;
 	else R[r1] = 0;
 
-	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
+	cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
 
 	return instruction+1;
 }
@@ -43,7 +43,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	if(sign!=0) R[r1] = R[r2] - address;
 	else R[r1] = R[r2] + address;
 
-	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
+	cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<hash[r1]<<" = "<<R[r1]<<endl;
 	return instruction+1;
 }
 
@@ -52,7 +52,7 @@ int decode_c(int memory_instruction,int end_of_instruction,int instruction,int c
 	int new_instruction = ((1<<26)-1) & (memory_instruction);
 	if(new_instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
 
-	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<new_instruction - ref_ins<<endl;
+	cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<new_instruction - ref_ins<<endl;
 	return new_instruction;		//correct this.
 }
 
@@ -135,14 +135,14 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 
 	if(op==6 && R[r1]==R[r2]) 
 	{
-		cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
+		cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
 		return next_instruction;
 	}
 	else if(op==5 && R[r1]!=R[r2]) 
 	{
-		cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
+		cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;
 		return next_instruction;
 	}
-	cout<<"core number :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<instruction+1 - ref_ins<<endl;
+	cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<instruction+1 - ref_ins<<endl;
 	return instruction+1;
 }
