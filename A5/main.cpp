@@ -129,154 +129,161 @@ int main(int argc,char* argv[])
 		cur_instruction[i] = main_instruction[i];
 	}
 
-
-	while(true)
+	unordered_set<int> core_remaining;
+	for(int I=0;I<N;I++)
 	{
+		core_remaining.insert(I);
+	}
+	while(cycle[0] <= M && core_remaining.size()!=0)
+	{
+
 		for(int I=0;I<N;I++)
 		{
-		if(cur_instruction[I] >= main_instruction[I] && cur_instruction[I] < exit_instruction[I])
-		{
-		if(req_cycle[I] == cycle[I] && buffer_row!=-1)
-		{
-			empty_dram = true;
-			if(prev_dram_ins!=-1)
-			{free(prev_dram_ins,R_used,busy[I]);prev_dram_ins = -1;}
-
-			if(same_row[buffer_row].size()>0)
+			if(cur_instruction[I] >= main_instruction[I] && cur_instruction[I] < exit_instruction[I])
 			{
-				Node* temp = same_row[buffer_row].front();
-				same_row[buffer_row].pop();
-				int ins = temp->data;
-				prev_dram_ins = ins;
-
-				int add = temp->saved_address;
-				temp->prev->next = temp->next;
-				temp->next->prev = temp->prev;
-
-				int memory_instruction = memory[ins/256][ins%256];
-				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
-
-				req_cycle[I] = cycle[I] + col_delay;
-				
-				cout<<"line number "<<ins<<" : cycle "<<cycle[I]<<" - "<<req_cycle[I]-1;
-				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
-				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[(R_used[ins])]<<endl;
-
-				empty_dram = false;
-				blocked[I] = false;
-				cycle[I]++;
-				continue;
-			}
-			else if(/*blocked && */head->next->data != -1)
-			{
-				Node* temp = head -> next;
-				int ins = temp-> data;
-				prev_dram_ins = ins;
-
-				int add = temp->saved_address;
-				temp->prev->next = temp->next;
-				temp->next->prev = temp->prev;
-
-				int memory_instruction = memory[ins/256][ins%256];
-								
-				if(num_sw!=0) 
+				//cerr << "B" << I ;
+				if(req_cycle[I] == cycle[I] && buffer_row!=-1)
 				{
-					write_row(memory,buffer,buffer_row);
-					req_cycle[I] = cycle[I] + 2*row_delay+ col_delay+1;
-					row_updates++;
+					empty_dram = true;
+					if(prev_dram_ins!=-1)
+					{free(prev_dram_ins,R_used,busy[I]);prev_dram_ins = -1;}
+
+					if(same_row[buffer_row].size()>0)
+					{
+						Node* temp = same_row[buffer_row].front();
+						same_row[buffer_row].pop();
+						int ins = temp->data;
+						prev_dram_ins = ins;
+
+						int add = temp->saved_address;
+						temp->prev->next = temp->next;
+						temp->next->prev = temp->prev;
+
+						int memory_instruction = memory[ins/256][ins%256];
+						if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
+
+						req_cycle[I] = cycle[I] + col_delay;
+						
+						cout<<"line number "<<ins<<" : cycle "<<cycle[I]<<" - "<<req_cycle[I]-1;
+						if((memory_instruction>>26 & ((1<<5)-1)) == 8)
+						{cout<<": "<<hash[(R_used[ins])]<<" = ";}
+						else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
+						cout<<R[(R_used[ins])]<<endl;
+
+						empty_dram = false;
+						blocked[I] = false;
+						cycle[I]++;
+						continue;
+					}
+					else if(/*blocked && */head->next->data != -1)
+					{
+						Node* temp = head -> next;
+						int ins = temp-> data;
+						prev_dram_ins = ins;
+
+						int add = temp->saved_address;
+						temp->prev->next = temp->next;
+						temp->next->prev = temp->prev;
+
+						int memory_instruction = memory[ins/256][ins%256];
+										
+						if(num_sw!=0) 
+						{
+							write_row(memory,buffer,buffer_row);
+							req_cycle[I] = cycle[I] + 2*row_delay+ col_delay+1;
+							row_updates++;
+						}
+						else req_cycle[I] = cycle[I] + row_delay+ col_delay+1;
+
+						buffer_row = add/1024;
+						same_row[buffer_row].pop();
+						copy_row(memory,buffer,buffer_row);
+
+						cout<<"line number "<<ins<<" : cycle "<<cycle[I]<< ": DRAM request issued "<<endl;
+						cout<<"line number "<<ins<<" : cycle "<<cycle[I]+1<<" - "<<req_cycle[I]-1;
+						if((memory_instruction>>26 & ((1<<5)-1))== 8)
+						{cout<<": "<<hash[(R_used[ins])]<<" = ";}
+						else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
+						cout<<R[I][(R_used[ins])]<<endl;
+
+						num_sw = 0;
+						if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
+
+						empty_dram = false;
+						blocked[I] = false;
+						cycle[I]++;
+						continue;
+					}
 				}
-				else req_cycle[I] = cycle[I] + row_delay+ col_delay+1;
+				int memory_instruction = memory[cur_instruction[I]/256][cur_instruction[I]%256];
+				int type = ((1<<5)-1) & (memory_instruction>>26);
+				int prev_instruction = cur_instruction[I];
 
-				buffer_row = add/1024;
-				same_row[buffer_row].pop();
-				copy_row(memory,buffer,buffer_row);
-
-				cout<<"line number "<<ins<<" : cycle "<<cycle[I]<< ": DRAM request issued "<<endl;
-				cout<<"line number "<<ins<<" : cycle "<<cycle[I]+1<<" - "<<req_cycle[I]-1;
-				if((memory_instruction>>26 & ((1<<5)-1))== 8)
-				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[I][(R_used[ins])]<<endl;
-
-				num_sw = 0;
-				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
-
-				empty_dram = false;
-				blocked[I] = false;
-				cycle[I]++;
-				continue;
-			}
-		}
-		int memory_instruction = memory[cur_instruction[I]/256][cur_instruction[I]%256];
-		int type = ((1<<5)-1) & (memory_instruction>>26);
-		int prev_instruction = cur_instruction[I];
-
-		if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
-		else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
-		else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle[I]);
-		else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
-		else if(type == 8 || type ==9)
-		{
-			if(buffer_row == -1)
-			{
-				int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
-				int row = add/1024;
-				copy_row(memory,buffer,row);
-				buffer_row = row;
-
-				req_cycle[I] = cycle[I] + row_delay +col_delay+1;
-				decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer);
-				
-				if(type==9) {num_sw++;row_updates++;}
-
-				prev_dram_ins = cur_instruction[I];
-				cout<<"line number "<<cur_instruction[I]<<" : cycle "<<cycle[I]<< ": DRAM request issued "<<endl;		//Line number will be wrongly printed.. Sort thiss
-				cout<<"line number "<<cur_instruction[I]<<" : cycle "<<cycle[I]+1<<" - "<<req_cycle[I]-1;
-
-				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
-				{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
-
-				empty_dram = false;
-				cur_instruction[I]++;
-			}
-			else
-			{
-				//cout << busy[10];
-				if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer))
+				if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
+				else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
+				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle[I]);
+				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle[I],hash);
+				else if(type == 8 || type ==9)
 				{
-					//cout<<instruction<<endl;
-					int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
-					Node* temp = new Node(cur_instruction[I]);
-					temp->saved_address = add;
+					if(buffer_row == -1)
+					{
+						int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
+						int row = add/1024;
+						copy_row(memory,buffer,row);
+						buffer_row = row;
 
-					if(type==9) row_updates++;
+						req_cycle[I] = cycle[I] + row_delay +col_delay+1;
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer);
+						
+						if(type==9) {num_sw++;row_updates++;}
 
-					temp -> prev = tail -> prev;
-					temp -> next = tail;
-					tail->prev->next = temp;
-					tail->prev = temp;
+						prev_dram_ins = cur_instruction[I];
+						cout<<"line number "<<cur_instruction[I]<<" : cycle "<<cycle[I]<< ": DRAM request issued "<<endl;		//Line number will be wrongly printed.. Sort thiss
+						cout<<"line number "<<cur_instruction[I]<<" : cycle "<<cycle[I]+1<<" - "<<req_cycle[I]-1;
 
-					same_row[add/1024].push(temp);
-					cur_instruction[I]++;
-					if(empty_dram) cycle[I]--;		//if dram is empty it will be executed in the same cycle.
+						if((memory_instruction>>26 & ((1<<5)-1)) == 8)
+						{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
+						else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
+						cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
+
+						empty_dram = false;
+						cur_instruction[I]++;
+					}
+					else
+					{
+						//cout << busy[10];
+						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer))
+						{
+							//cout<<instruction<<endl;
+							int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
+							Node* temp = new Node(cur_instruction[I]);
+							temp->saved_address = add;
+
+							if(type==9) row_updates++;
+
+							temp -> prev = tail -> prev;
+							temp -> next = tail;
+							tail->prev->next = temp;
+							tail->prev = temp;
+
+							same_row[add/1024].push(temp);
+							cur_instruction[I]++;
+							if(empty_dram) cycle[I]--;		//if dram is empty it will be executed in the same cycle.
+						}
+					}
 				}
-			}
-		}
-		else throw invalid_argument("Unexpected memory instruction");
-		if(cur_instruction[I] == prev_instruction) {blocked[I] = true;cycle[I] = req_cycle[I]-1;}
-		else blocked[I] = false;
+				else throw invalid_argument("Unexpected memory instruction");
+				if(cur_instruction[I] == prev_instruction) {blocked[I] = true;cycle[I] = req_cycle[I]-1;}
+				else {blocked[I] = false;}
 
-		cycle[I] ++;
-		if(cur_instruction[I]==exit_instruction[I]) break;
-		req_cycle[I] = max(req_cycle[I],cycle[I]);
-		//cout<<req_cycle<<" "<<cycle<<endl;
-	}
-	}
-	}
+				cycle[I] ++;
+				if(cur_instruction[I]==exit_instruction[I]) {core_remaining.erase(I);break;}
+				req_cycle[I] = max(req_cycle[I],cycle[I]);
+				//cout<<req_cycle<<" "<<cycle<<endl;
+			}
+		}//for
+	}//while
+	cout << "Terminated";
 
 	//remaining dram instructions.
 
