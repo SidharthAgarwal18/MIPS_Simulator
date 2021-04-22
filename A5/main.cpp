@@ -277,7 +277,7 @@ int main(int argc,char* argv[])
 				else {blocked[I] = false;}
 
 				cycle[I] ++;
-				if(cur_instruction[I]==exit_instruction[I]) {core_remaining.erase(I);break;}
+				if(cur_instruction[I]==exit_instruction[I]) {core_remaining.erase(I);}
 				req_cycle[I] = max(req_cycle[I],cycle[I]);
 				//cout<<req_cycle<<" "<<cycle<<endl;
 			}

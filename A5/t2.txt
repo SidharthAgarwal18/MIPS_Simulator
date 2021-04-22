@@ -1,3 +1,8 @@
 main:
 	addi $t0,$t1,20
+slt $t3,$zero,$t0
+	beq $zero,$zero,noob
+	addi $t0,$t1,19
+noob:
+	addi $t0,$t1,19
 exit:

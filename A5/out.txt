@@ -1,4 +1,13 @@
 line number 0: cycle 1: $t0 = 19
-line number 1: cycle 1: $t0 = 20
-line number 2: cycle 1: $t0 = 21
+line number 5: cycle 1: $t0 = 20
+line number 10: cycle 1: $t0 = 21
+line number 1: cycle 2: $t3 = 1
+line number 6: cycle 2: $t3 = 1
+line number 11: cycle 2: $t3 = 1
+line number 2: cycle 3: jumped to line number4
+line number 7: cycle 3: jumped to line number9
+line number 12: cycle 3: jumped to line number14
+line number 4: cycle 4: $t0 = 19
+line number 9: cycle 4: $t0 = 19
+line number 14: cycle 4: $t0 = 19
 Terminated
