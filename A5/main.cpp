@@ -75,7 +75,8 @@ int main(int argc,char* argv[])
 	unordered_map<int,int> row_blocking_sw[N][32];
 	bool blocked[N] = {false};								//Is core 'I' blocked
 	unordered_set<int> rows_involved_when_blocked[N];		//Set to store row to load..
-	int priority[N] = {0};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
+	int priority[N] = {-1};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
+	for(int i=0;i<N;i++) priority[i] = -1;
 
 	bool empty_dram = true;
 	int row_updates = 0;		//Implement this later
@@ -269,10 +270,10 @@ int main(int argc,char* argv[])
 				int type = ((1<<5)-1) & (memory_instruction>>26);
 				int prev_instruction = cur_instruction[I];
 
-				if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])]);
-				else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])]);
-				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle,I,start[(core_of_ins[(cur_instruction[I])])]);
-				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])]);
+				if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
+				else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
+				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
+				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
 				else if(type == 8 || type ==9)
 				{
 					if(buffer_row == -1)
@@ -283,7 +284,7 @@ int main(int argc,char* argv[])
 						buffer_row = row;
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
-						decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer);
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
 
 						if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][row]++;}
 						if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][row]++;}
@@ -314,7 +315,7 @@ int main(int argc,char* argv[])
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer))
+						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority))
 						{
 							//cout<<instruction<<endl;
 							int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
