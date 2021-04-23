@@ -74,8 +74,8 @@ int main(int argc,char* argv[])
 	unordered_map<int,int> row_blocking_lw[N][32];			//For next row selection
 	unordered_map<int,int> row_blocking_sw[N][32];
 	bool blocked[N] = {false};								//Is core 'I' blocked
-	unordered_set<int> rows_involved_when_blocked[N] = {0};	//Hueristic for deciding which row to load..
-	int priority[N] = {0};									//Is proportional to cycles it will require to run based on current file..
+	unordered_set<int> rows_involved_when_blocked[N];		//Set to store row to load..
+	int priority[N] = {0};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
 
 	bool empty_dram = true;
 	int row_updates = 0;		//Implement this later

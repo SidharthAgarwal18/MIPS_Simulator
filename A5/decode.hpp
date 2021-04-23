@@ -40,8 +40,6 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	
 	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 							//if either of them is busy dont move forward
 	{
-		blocked[core] = true;
-		registers_involved = count_inv(r1,busy) + count_inv(r2,busy);
 		return instruction;}
 
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
