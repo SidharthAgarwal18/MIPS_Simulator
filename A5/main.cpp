@@ -36,9 +36,19 @@ void free (int ins,int R_used[],int busy[])
 	return ;
 }
 
+void print_map(std::unordered_map<int,int> const &m)//Added this functon only for debugging purposes
+{
+	cerr << "a";
+    for (auto &pair: m) {
+        cerr << "{" << pair.first << ": " << pair.second << "}\n";
+    }
+}
+
+
 int main(int argc,char* argv[])
 {
 	int N,M;    					//Number of files and cycles allowed
+	int row_delay,col_delay;
 	if(argc<5 || argc>5)			//default values...
 	{
 		row_delay = 10;
@@ -55,11 +65,17 @@ int main(int argc,char* argv[])
 	}
 	string output_file_name = "out.txt";
 	int memory[1024][256];
-	int R[16][32] = {0};
-	int busy[16][32] = {0};
+	int R[N][32] = {0};
+	int busy[N][32] = {0};
 	int buffer_row = -1;
 	int buffer[256];
 	string hash[32];
+
+	unordered_map<int,int> row_blocking_lw[N][32];			//For next row selection
+	unordered_map<int,int> row_blocking_sw[N][32];
+	bool blocked[N] = {false};								//Is core 'I' blocked
+	unordered_set<int> rows_involved_when_blocked[N] = {0};	//Hueristic for deciding which row to load..
+	int priority[N] = {0};									//Is proportional to cycles it will require to run based on current file..
 
 	bool empty_dram = true;
 	int row_updates = 0;		//Implement this later
@@ -80,6 +96,8 @@ int main(int argc,char* argv[])
 	hash[24] = "$t8";hash[25] = "$t9";hash[26] = "$k0";hash[27] = "$k1";hash[28] = "$gp";hash[29] = "$sp";hash[30] = "$fp";hash[31] = "$ra";
 
 	int start[N] = {0};				//stores the line number of first instruction in that core
+	int main_instruction[N] = {-1};
+	int exit_instruction[N] = {-1};
 	int instruction = -1;
 	int end_of_instruction = 0;
 	int prev_dram_ins = -1;
@@ -130,7 +148,8 @@ int main(int argc,char* argv[])
 	int cycle = 1;
 	int req_cycle = 1;
 
-	int cur_instruction[16];
+
+	int cur_instruction[N];
 	for(int i=0;i<N;i++)
 	{
 		cur_instruction[i] = main_instruction[i];
@@ -176,11 +195,13 @@ int main(int argc,char* argv[])
 				}
 
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;	//for printing.
-				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
+				int type = (memory_instruction>>26 & ((1<<5)-1));
+				if(type == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 				cout<<R[ins][(R_used[ins])]<<endl;
-
+				if(type == 8) {row_blocking_lw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
+				if(type == 9) {row_blocking_sw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
 				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
 				empty_dram = false;
 				continue;
@@ -221,13 +242,17 @@ int main(int argc,char* argv[])
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
 				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
 
-				if((memory_instruction>>26 & ((1<<5)-1))== 8)
+				int type = (memory_instruction>>26 & ((1<<5)-1));
+				if(type == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 				cout<<R[ins][(R_used[ins])]<<endl;
 
 				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
+
+				if(type == 8) {row_blocking_lw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
+				if(type == 9) {row_blocking_sw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
 
 				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
 				empty_dram = false;
@@ -259,6 +284,9 @@ int main(int argc,char* argv[])
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
 						decode_d(memory_instruction,R[I],cur_instruction[I],type,end_of_instruction,busy[I],R_used,buffer);
+
+						if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][row]++;}
+						if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][row]++;}
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						if(req_cycle<=M)
@@ -272,6 +300,8 @@ int main(int argc,char* argv[])
 							{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
 							else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 							cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
+							if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][row]--;}
+							if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][row]--;}
 						}
 						else
 						{
@@ -298,6 +328,9 @@ int main(int argc,char* argv[])
 							tail->prev->next = temp;
 							tail->prev = temp;
 
+							if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][add/1024]++;}
+							if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][add/1024]++;}
+
 							same_row[add/1024].push(temp);		//pushed in appropriate row.
 							cur_instruction[I]++;
 							if(empty_dram) {cycle--;empty_dram = false;}	//if dram is empty it will be executed in the same cycle there we will do cycle++ dont worry.
@@ -315,7 +348,6 @@ int main(int argc,char* argv[])
 		req_cycle = max(req_cycle,cycle); //to ensure req_cycle>=cycle.
 		
 	}
-	
 	while(cycle<M && empty_dram==false)
 	{
 		if(req_cycle == cycle && buffer_row!=-1)

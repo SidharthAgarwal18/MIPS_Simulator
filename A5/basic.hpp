@@ -5,12 +5,6 @@
 #include <stdexcept>
 using namespace std;
 
-//Variable whose values are not changed frequently..
-
-int main_instruction[16] = {-1};
-int exit_instruction[16] = {-1};
-int row_delay,col_delay;
-
 
 //Basic utility functions
 int StringtoNumber(string name,int instruction)

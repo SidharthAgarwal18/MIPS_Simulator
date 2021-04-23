@@ -15,7 +15,9 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 			//if either of them is busy dont move forward
-	{return instruction;}
+	{
+		return instruction;
+	}
 
 	if(op==1) R[r1] = R[r2] + R[r3];
 	else if(op==2) R[r1] = R[r2] - R[r3];
@@ -37,7 +39,10 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	
 	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 							//if either of them is busy dont move forward
-	{return instruction;}
+	{
+		blocked[core] = true;
+		registers_involved = count_inv(r1,busy) + count_inv(r2,busy);
+		return instruction;}
 
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
 	if(sign!=0) R[r1] = R[r2] - address;
