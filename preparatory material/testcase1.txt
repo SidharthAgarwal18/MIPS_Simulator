@@ -5,7 +5,6 @@ main:
 	addi $t1, $zero, 0
 
 initloop: 
-	addi $t1, $t1, 1
 	sw $t1, 0($s0)
 	addi $s0, $s0, 4
 	addi $s1, $s1, 1

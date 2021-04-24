@@ -53,8 +53,8 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 3;
-		M = 150;
+		N = 5;
+		M = 500;
 	}
 	else
 	{
@@ -163,7 +163,8 @@ int main(int argc,char* argv[])
 	}
 
 	while(cycle <= M && core_remaining.size()!=0)
-	{	
+	{
+		//cerr << cycle <<" "<< blocked[0] <<endl;
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
 			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
@@ -210,7 +211,24 @@ int main(int argc,char* argv[])
 			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
 				Node* temp = head -> next;		//selection for next row instruction.
-				
+				int temp_core = -1;
+				int min_dependence = INT_MAX;
+				for(int i=0;i<N;i++)
+				{
+					if(blocked[i]==true)
+					{
+						if(priority[i]<min_dependence)
+						{
+							min_dependence = priority[i];
+							temp_core = i;
+						}
+					}
+				}
+				if(temp_core!=-1)
+				{
+					int temp_row = *(rows_involved_when_blocked[temp_core].begin());
+					temp = same_row[temp_row].front();
+				}
 				int ins = temp-> data;
 				prev_dram_ins = ins;
 				int add = temp->saved_address;
@@ -349,7 +367,7 @@ int main(int argc,char* argv[])
 		req_cycle = max(req_cycle,cycle); //to ensure req_cycle>=cycle.
 		
 	}
-	while(cycle<M && empty_dram==false)
+	while(cycle<=M && empty_dram==false)
 	{
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
@@ -443,7 +461,6 @@ int main(int argc,char* argv[])
 		}
 		cycle = max(req_cycle,cycle+1);
 	}
-
 	cout<<endl;
 	if(pending_instruction!=-1)
 	{cout<<"Instruction : "<<pending_instruction<<" of core : "<<core_of_ins[pending_instruction]<<" has not completed in execution and will ";
@@ -467,7 +484,7 @@ int main(int argc,char* argv[])
 	for(int i=0;i<N;i++)
 	{
 		if(core_remaining.find(i)!=core_remaining.end())
-		{cout<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
+		{cout<<endl<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
 		else
 		{cout<<"Core : "<<i<<" completed successfully"<<endl;}
 	}

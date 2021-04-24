@@ -26,5 +26,9 @@ sumloop:
 	addi $s1, $s1, 1
 	slt $s3, $s1, $s2
 	bne $s3, $zero, sumloop
-
+	sw $t1, 0($s0)
+	sw $t7, 0($s0)
+	sw $t6, 0($s0)
+	sw $t8, 0($s0)
+	sw $t9, 0($s0)
 exit:
