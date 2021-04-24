@@ -1,5 +1,21 @@
 main:
 	addi $t0,$t1,900
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
+	addi $s2, $zero, 1
 	slt $t3,$zero,$t0
 	lw $t4,0($t0)
 	beq $zero,$zero,noob

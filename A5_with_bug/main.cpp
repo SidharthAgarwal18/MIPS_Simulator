@@ -54,7 +54,7 @@ int main(int argc,char* argv[])
 		row_delay = 10;
 		col_delay = 2;		
 		N = 5;
-		M = 500;
+		M = 4000;
 	}
 	else
 	{
