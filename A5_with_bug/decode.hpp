@@ -21,7 +21,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		blocked[core] = true;
 		for(auto x:row_blocking_lw[r3])
 		{	
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0 && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 
 			if(priority[core]==-1) priority[core] = 0;
@@ -29,7 +29,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_lw[r2])
 		{	
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 
 			if(priority[core]==-1) priority[core] = 0;
@@ -37,7 +37,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_lw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 
 			if(priority[core]==-1) priority[core] = 0;
@@ -45,7 +45,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_sw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -82,7 +82,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		blocked[core] = true;
 		for(auto x:row_blocking_lw[r2])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -90,7 +90,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_lw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -98,7 +98,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_sw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -179,7 +179,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 		blocked[core] = true;
 		for(auto x:row_blocking_lw[r2])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -187,7 +187,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 		}
 		for(auto x:row_blocking_lw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -197,7 +197,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 		{
 			for(auto x:row_blocking_sw[r1])
 			{
-				if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+				if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 				{rows_involved_when_blocked.insert(x.first);}
 		
 				if(priority[core]==-1) priority[core] = 0;
@@ -242,7 +242,7 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		blocked[core] = true;
 		for(auto x:row_blocking_lw[r2])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;
@@ -250,7 +250,7 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 		}
 		for(auto x:row_blocking_lw[r1])
 		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end())
+			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
 			{rows_involved_when_blocked.insert(x.first);}
 		
 			if(priority[core]==-1) priority[core] = 0;

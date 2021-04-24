@@ -209,7 +209,7 @@ int main(int argc,char* argv[])
 				if(type == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[ins][(R_used[ins])]<<endl;
+				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
 				if(type == 8) {row_blocking_lw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
 				if(type == 9) {row_blocking_sw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
 				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
@@ -273,7 +273,7 @@ int main(int argc,char* argv[])
 				if(type == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[ins][(R_used[ins])]<<endl;
+				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
 
 				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
@@ -413,7 +413,7 @@ int main(int argc,char* argv[])
 				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[ins][(R_used[ins])]<<endl;
+				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
 
 				empty_dram = false;					//dram is busy.
 				continue;
@@ -457,7 +457,7 @@ int main(int argc,char* argv[])
 				if((memory_instruction>>26 & ((1<<5)-1))== 8)
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[ins][(R_used[ins])]<<endl;
+				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
 
 				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
@@ -489,7 +489,7 @@ int main(int argc,char* argv[])
 	}
 	if(first==0){cout<<"NONE\n\n";}
 	else cout<<endl;
-
+	cerr << memory[4][982];
 	for(int i=0;i<N;i++)
 	{
 		if(core_remaining.find(i)!=core_remaining.end())
