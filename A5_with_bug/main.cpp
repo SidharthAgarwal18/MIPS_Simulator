@@ -64,7 +64,15 @@ int main(int argc,char* argv[])
 		col_delay = atoi(argv[4]);
 	}
 	string output_file_name = "out.txt";
-	int memory[1024][256];
+	int memory[1024][256] = {0};
+	for(int r=0;r<1024;r++)
+	{
+		for(int c=0;c<256;c++)
+		{
+			memory[r][c] = 0;
+		}
+	}
+
 	int R[N][32] = {0};
 	int busy[N][32] = {0};
 	int buffer_row = -1;
@@ -224,7 +232,7 @@ int main(int argc,char* argv[])
 						}
 					}
 				}
-				if(temp_core!=-1)
+				if(temp_core!=-1 && rows_involved_when_blocked[temp_core].size()>0)
 				{
 					int temp_row = *(rows_involved_when_blocked[temp_core].begin());
 					temp = same_row[temp_row].front();
@@ -464,7 +472,7 @@ int main(int argc,char* argv[])
 	cout<<endl;
 	if(pending_instruction!=-1)
 	{cout<<"Instruction : "<<pending_instruction<<" of core : "<<core_of_ins[pending_instruction]<<" has not completed in execution and will ";
-	cout<<"finish at cycle : "<<pending_finish<<endl;}
+	cout<<"finish at cycle : "<<pending_finish<<endl<<endl;}
 
 	cout<<"The instructions remaining in dram which have not been executed are \n";
 	int first = 0;
@@ -480,11 +488,12 @@ int main(int argc,char* argv[])
 		cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<endl;
 	}
 	if(first==0){cout<<"NONE\n\n";}
+	else cout<<endl;
 
 	for(int i=0;i<N;i++)
 	{
 		if(core_remaining.find(i)!=core_remaining.end())
-		{cout<<endl<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
+		{cout<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
 		else
 		{cout<<"Core : "<<i<<" completed successfully"<<endl;}
 	}
