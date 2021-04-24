@@ -1,9 +1,0 @@
-main:
-	addi $t0,$t1,900
-	slt $t3,$zero,$t0
-	lw $t4,0($t0)
-	beq $zero,$zero,noob
-	addi $t0,$t1,19
-noob:
-	addi $t0,$t1,19
-exit:
