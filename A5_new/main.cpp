@@ -260,6 +260,7 @@ int main(int argc,char* argv[])
 						}
 						else if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,priority))
 						{
+							blocked[I] = true;
 							//cout<<instruction<<endl;
 							int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
 							Node* temp = new Node(cur_instruction[I]);

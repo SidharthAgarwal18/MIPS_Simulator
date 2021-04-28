@@ -16,6 +16,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 			//if either of them is busy dont move forward
 	{
+		blocked[core] = true;
 		return instruction;
 	}
 	else
@@ -42,6 +43,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	
 	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 							//if either of them is busy dont move forward
 	{
+		blocked[core] = true;
 		return instruction;
 	}
 	else
@@ -112,6 +114,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 
 	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) 
 	{
+		blocked[core] = true;
 		return instruction;
 	}
 	else
@@ -145,6 +148,7 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 
 	if(busy[r1]==1 || busy[r2]==1) 
 	{
+		blocked[core] = true;
 		return instruction;
 	}
 	else
