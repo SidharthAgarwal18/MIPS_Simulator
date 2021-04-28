@@ -106,7 +106,7 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,int busy[],int R_used[],int buffer[],bool blocked[],int priority[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,int busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[])
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -131,7 +131,9 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	if(sign!=0) address = R[r2] - 4*offset;
 	else address = R[r2] + 4*offset;
 
-	if(address/4>=((1<<18)) || (address/4<=end_of_instruction) || address<0) 
+	address = address + start_address;
+	
+	if(address/4>=((1<<18)) || ((address - start_address)/4<=end_of_instruction) || address<0) 
 	{throw invalid_argument("Unexpected inputwsdank "+to_string(instruction)+" because of either access of encoded instruction data in memory or address not in memory size");}
 		
 	if(op==8) take_data(buffer,R,r1,(address/4)%256,address%4)	;		        

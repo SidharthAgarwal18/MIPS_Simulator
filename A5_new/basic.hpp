@@ -116,7 +116,7 @@ bool is_emptyline(string name)					//nowonwards empty line is not counted in ins
 	return true;
 }
 
-int address_of_instruction(int memory_instruction,int R[],int end_of_instruction)
+int address_of_instruction(int memory_instruction,int R[],int end_of_instruction,int start_address)
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -128,7 +128,8 @@ int address_of_instruction(int memory_instruction,int R[],int end_of_instruction
 	if(sign!=0) address = R[r2] - 4*offset;
 	else address = R[r2] + 4*offset;
 
-	if(address/4>=((1<<18)) || (address/4<=end_of_instruction) || address<0) 
+	address = address + start_address;
+	if(address/4>=((1<<18)) || ((address - start_address)/4 <=end_of_instruction) || address<0) 
 	{throw invalid_argument("Unexpected inputw " + to_string(memory_instruction)+" because of either access of encoded instruction data in memory or memory size");}
 	
 	return address;

@@ -7,7 +7,7 @@ using namespace std;
 
 #include "basic.hpp"
 
-void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt,mult,addi
+void type_a(string name,int memory[][256],int instruction,int pos,int core,int total_cores)	//for add,slt,mult,addi
 {
 	int n = name.length();
 	int r;
@@ -22,7 +22,7 @@ void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt
 	if(r==0) pos += 2;
 	if(r == -1) throw invalid_argument("Unexpected input2");			//no valid register
 	
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<21);
 	pos +=3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
@@ -40,7 +40,7 @@ void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<16);
 	pos += 3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//{ws+}{,}{ws+}
@@ -58,14 +58,14 @@ void type_a(string name,int memory[][256],int instruction,int pos)	//for add,slt
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<11);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<11);
 	pos += 3;
 
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
 	if(pos<n) throw invalid_argument("Unexpected inputatype_a");				//no trash character allowed after instruction
 }
 
-void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
+void type_b(string name,int memory[][256],int instruction,int pos,int core,int total_cores)				//for addi
 {
 	int n = name.length();
 	int r;
@@ -78,7 +78,7 @@ void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r == -1) throw invalid_argument("Unexpected inputatype_b");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<21);
 	pos +=3;
 	
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
@@ -95,7 +95,7 @@ void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<16);
 	pos += 3;
 
 	//cerr << name[pos];
@@ -111,15 +111,15 @@ void type_b(string name,int memory[][256],int instruction,int pos)				//for addi
 	if(pos==n) throw invalid_argument("Unexpected inputh");				//input length smaller.
 
 	if(name[pos]==45)														//sign bit is stored in 16th bit
-	{memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] +(1<<15); pos++;}
+	{memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] +(1<<15); pos++;}
 	
 
 	int address = StringtoNumber(name.substr(pos,n-pos),instruction);
 	if(address > (1<<15)) throw invalid_argument("Unexpected input "+to_string(instruction)+"address greater than 2^15-1");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + address; //address(or no. for addition)is stored in the 15 least sig. bits		
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + address; //address(or no. for addition)is stored in the 15 least sig. bits		
 }
 
-void type_c(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label)
+void type_c(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label,int core,int total_cores)
 {
 	int n = name.length();
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			//for ws after name of instruction
@@ -131,10 +131,10 @@ void type_c(string name,int memory[][256],int instruction,int pos,unordered_map<
 
 	if(label.find(name_label)==label.end()) throw invalid_argument("label not found in the program");
 
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + label[name_label];
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + label[name_label];
 }	
 
-void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and sw
+void type_d(string name,int memory[][256],int instruction,int pos,int core,int total_cores)	//for lw and sw
 {
 	int n = name.length();
 	int r;
@@ -148,7 +148,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	if(r==0) pos += 2;
 	if(r == -1) throw invalid_argument("Unexpected inputatype_d");			//no valid register
 	
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<21);
 	pos +=3;
 
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;			// for ws after 1st register
@@ -161,7 +161,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	else throw invalid_argument("Unexpected inputl");
 
 	if(name[pos]==45)														//sign bit is stored in 16th bit
-	{memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] +(1<<15); pos++;}
+	{memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] +(1<<15); pos++;}
 	
 	int number_end = pos;
 	while(number_end<n && name[number_end]-'0'>=0 && name[number_end] -'9'<=0) number_end++;
@@ -169,7 +169,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	
 	int offset = StringtoNumber(name.substr(pos,number_end-pos),instruction);
 	if(offset > (1<<15)) throw invalid_argument("Unexpected input "+to_string(instruction)+" |offset| greater than 2^15");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + offset;
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + offset;
 	
 	pos = number_end;
 	while(pos<n && (int(name[pos])==9||int(name[pos])==32)) pos++;
@@ -184,7 +184,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r==-1) throw invalid_argument("Unexpected inputp");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<16);
 	pos += 3;
 	
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
@@ -196,7 +196,7 @@ void type_d(string name,int memory[][256],int instruction,int pos)	//for lw and 
 		
 }
 
-void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label)
+void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<string,int> label,int core,int total_cores)
 {
 	int n = name.length();
 	int r;
@@ -209,7 +209,7 @@ void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r == -1) throw invalid_argument("Unexpected inputatype_e");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<21);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<21);
 	pos +=3;
 	
 	while(pos<n&&(int(name[pos])==9||int(name[pos])==32)) pos++;
@@ -226,7 +226,7 @@ void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<
 	r = R_index(reg);
 	if(r==0) pos += 2;
 	if(r==-1) throw invalid_argument("Unexpected inputb");
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + (r<<16);
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + (r<<16);
 	pos += 3;
 
 	//cerr << name[pos];
@@ -244,11 +244,11 @@ void type_e(string name,int memory[][256],int instruction,int pos,unordered_map<
 	string name_label = name.substr(pos,n-pos);
 	if(label.find(name_label)==label.end()) throw invalid_argument("label not found in the program");
 
-	memory[instruction/256][instruction%256] = memory[instruction/256][instruction%256] + label[name_label];
+	memory[instruction/256 + (1024/total_cores)*core][instruction%256] = memory[instruction/256 + (1024/total_cores)*core][instruction%256] + label[name_label];
 }
 
 
-pair<int,int> map_instruction(string name, int instruction,int memory[][256])
+pair<int,int> map_instruction(string name, int instruction,int memory[][256],int core,int total_cores)
 {
 	int i = 0;
 	int n = name.length();
@@ -269,7 +269,7 @@ pair<int,int> map_instruction(string name, int instruction,int memory[][256])
 		}
 		
 		if(pos){
-		memory[instruction/256][instruction%256] = (l+1)<<26;
+		memory[instruction/256 + (1024/total_cores)*core][instruction%256] = (l+1)<<26;
 		return make_pair(l+1,i+m);}
 	}
 	
@@ -278,14 +278,14 @@ pair<int,int> map_instruction(string name, int instruction,int memory[][256])
 }
 
 
-void read_and_save_instruction(string instruction_string,int memory[][256],int instruction,unordered_map<string,int> label)
+void read_and_save_instruction(string instruction_string,int memory[][256],int instruction,unordered_map<string,int> label,int core,int total_cores)
 {
-	pair<int,int> temp = map_instruction(instruction_string,instruction,memory);
+	pair<int,int> temp = map_instruction(instruction_string,instruction,memory,core,total_cores);
 	int type = temp.first;
 	int pos = temp.second;
-	if(type==1 || type==2 || type==3 || type ==4) type_a(instruction_string,memory,instruction,pos);
-	else if(type==10) type_b(instruction_string,memory,instruction,pos);
-	else if (type==7)type_c(instruction_string,memory,instruction,pos,label);
-	else if(type==8 || type==9)type_d(instruction_string,memory,instruction,pos);
-	else if (type==5 || type==6)type_e(instruction_string,memory,instruction,pos,label);
+	if(type==1 || type==2 || type==3 || type ==4) type_a(instruction_string,memory,instruction,pos,core,total_cores);
+	else if(type==10) type_b(instruction_string,memory,instruction,pos,core,total_cores);
+	else if (type==7)type_c(instruction_string,memory,instruction,pos,label,core,total_cores);
+	else if(type==8 || type==9)type_d(instruction_string,memory,instruction,pos,core,total_cores);
+	else if (type==5 || type==6)type_e(instruction_string,memory,instruction,pos,label,core,total_cores);
 }
