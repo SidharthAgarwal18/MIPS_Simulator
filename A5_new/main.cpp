@@ -153,7 +153,7 @@ int main(int argc,char* argv[])
 	while(cycle <= M)
 	{
 		//cerr << cycle <<" "<< blocked[0] <<endl;
-		if(req_cycle == cycle && buffer_row!=-1)
+		if(req_cycle == cycle)
 		{
 			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
 			{free(prev_dram_ins,R_used,busy[(core_of_ins[prev_dram_ins])]);prev_dram_ins = -1;}
@@ -273,7 +273,7 @@ int main(int argc,char* argv[])
 							tail->prev = temp;
 							wait_buffer_size++;
 							cur_instruction[I]++;
-							cout<<"core :"<<I<<" line number "<<cur_instruction[I]-main_instruction[I]<<": cycle "<<cycle<<": "<<"Instruction saved in wait buffer"<<endl;
+							cout<<"core :"<<I<<" line number "<<cur_instruction[I]-main_instruction[I]-1<<": cycle "<<cycle<<": "<<"Instruction saved in wait buffer"<<endl;
 						}
 					}
 				}
