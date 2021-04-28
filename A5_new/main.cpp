@@ -50,7 +50,7 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 4;
+		N = 1;
 		M = 500;
 	}
 	else
@@ -150,7 +150,7 @@ int main(int argc,char* argv[])
 		cur_instruction[i] = main_instruction[i];
 	}
 
-	while(cycle <= M && core_remaining.size()!=0)
+	while(cycle <= M)
 	{
 		//cerr << cycle <<" "<< blocked[0] <<endl;
 		if(req_cycle == cycle && buffer_row!=-1)
@@ -158,60 +158,9 @@ int main(int argc,char* argv[])
 			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
 			{free(prev_dram_ins,R_used,busy[(core_of_ins[prev_dram_ins])]);prev_dram_ins = -1;}
 
-			if(same_row[buffer_row].size()>0)
-			{
-				Node* temp = same_row[buffer_row].front();
-				same_row[buffer_row].pop();
-				int ins = temp->data;
-				prev_dram_ins = ins;			//instruction in progress.
-
-				int add = temp->saved_address;		//address with which it was saved.
-
-				temp->prev->next = temp->next;		//delete node from common queue in O(1)
-				temp->next->prev = temp->prev;
-				wait_buffer_size--;
-
-				int memory_instruction = memory[ins/256][ins%256];
-				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;		//if sw instruction.
-
-				req_cycle = cycle + col_delay;
-
-				if(req_cycle>M)
-				{
-					pending_instruction = ins;
-					pending_finish = req_cycle;
-					break;
-				}
-
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;	//for printing.
-				int type = (memory_instruction>>26 & ((1<<5)-1));
-				if(type == 8)
-				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
-				continue;
-			}
-			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
+			if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
 				Node* temp = head -> next;		//selection for next row instruction.
-				int temp_core = -1;
-				int min_dependence = INT_MAX;
-				for(int i=0;i<N;i++)
-				{
-					if(blocked[i]==true)
-					{
-						if(priority[i]<min_dependence)
-						{
-							min_dependence = priority[i];
-							temp_core = i;
-						}
-					}
-				}
-				if(temp_core!=-1 && rows_involved_when_blocked[temp_core].size()>0)
-				{
-					int temp_row = *(rows_involved_when_blocked[temp_core].begin());
-					temp = same_row[temp_row].front();
-				}
 				int ins = temp-> data;
 				prev_dram_ins = ins;
 				int add = temp->saved_address;
@@ -220,8 +169,12 @@ int main(int argc,char* argv[])
 				temp->next->prev = temp->prev;
 				wait_buffer_size--;
 				int memory_instruction = memory[ins/256][ins%256];
-								
-				if(num_sw!=0) 
+						
+				if(add/1024 == buffer_row)
+				{
+					req_cycle = cycle + col_delay + 1;
+				}		
+				else if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
 					req_cycle = cycle + 2*row_delay+ col_delay+1;
@@ -230,7 +183,6 @@ int main(int argc,char* argv[])
 				else req_cycle = cycle + row_delay+ col_delay+1;
 
 				buffer_row = add/1024;
-				same_row[buffer_row].pop();
 				copy_row(memory,buffer,buffer_row);
 
 				if(req_cycle>M)
@@ -277,7 +229,7 @@ int main(int argc,char* argv[])
 						buffer_row = row;
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
-						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,priority);
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						if(req_cycle<=M)
@@ -302,7 +254,7 @@ int main(int argc,char* argv[])
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(dram_buffer_size == 31)
+						if(wait_buffer_size == 31)
 						{
 							blocked[I] = true;				//core got blocked due to no more space in row buffer
 						}
@@ -320,17 +272,12 @@ int main(int argc,char* argv[])
 							tail->prev->next = temp;
 							tail->prev = temp;
 							wait_buffer_size++;
-
-							if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][add/1024]++;}
-							if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][add/1024]++;}
-
 							cur_instruction[I]++;
+							cout<<"core :"<<I<<" line number "<<cur_instruction[I]-main_instruction[I]<<": cycle "<<cycle<<": "<<"Instruction saved in wait buffer"<<endl;
 						}
 					}
 				}
 				else throw invalid_argument("Unexpected memory instruction");
-				
-				if(cur_instruction[I]==exit_instruction[I]) {core_remaining.erase(I);}//core finished dont run again.
 				//cout<<req_cycle<<" "<<cycle<<endl;
 			}
 		}
@@ -338,128 +285,4 @@ int main(int argc,char* argv[])
 		req_cycle = max(req_cycle,cycle); //to ensure req_cycle>=cycle.
 	}
 	cycle = req_cycle;
-	while(cycle<=M)
-	{
-		if(req_cycle == cycle && buffer_row!=-1)
-		{
-			if(prev_dram_ins!=-1)		//there is actually a dram instuction just finished.
-			{free(prev_dram_ins,R_used,busy[(core_of_ins[prev_dram_ins])]);prev_dram_ins = -1;}
-
-			if(same_row[buffer_row].size()>0)
-			{
-				Node* temp = same_row[buffer_row].front();
-				same_row[buffer_row].pop();
-				int ins = temp->data;
-				prev_dram_ins = ins;			//instruction in progress.
-
-				int add = temp->saved_address;		//address with which it was saved.
-
-				temp->prev->next = temp->next;		//delete node from common queue in O(1)
-				temp->next->prev = temp->prev;
-
-				int memory_instruction = memory[ins/256][ins%256];
-				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;		//if sw instruction.
-
-				req_cycle = cycle + col_delay;		
-				
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;	//for printing.
-				
-				if(req_cycle>M)
-				{
-					pending_instruction = ins;
-					pending_finish = req_cycle;
-					if(empty_dram) cycle++;
-					empty_dram = false;
-					break;
-				}
-
-				if((memory_instruction>>26 & ((1<<5)-1)) == 8)
-				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
-
-				empty_dram = false;					//dram is busy.
-				continue;
-			}
-			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
-			{
-				Node* temp = head -> next;		//selection for next row instruction.
-				
-				int ins = temp-> data;
-				prev_dram_ins = ins;
-				int add = temp->saved_address;
-
-				temp->prev->next = temp->next;
-				temp->next->prev = temp->prev;
-				int memory_instruction = memory[ins/256][ins%256];
-								
-				if(num_sw!=0) 
-				{
-					write_row(memory,buffer,buffer_row);
-					req_cycle = cycle + 2*row_delay+ col_delay+1;
-					row_updates++;
-				}
-				else req_cycle = cycle + row_delay+ col_delay+1;
-
-				buffer_row = add/1024;
-				same_row[buffer_row].pop();
-				copy_row(memory,buffer,buffer_row);
-
-				if(req_cycle>M)
-				{
-					pending_instruction = ins;
-					pending_finish = req_cycle;
-					if(empty_dram) cycle++;
-					empty_dram = false;
-					break;
-				}
-
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
-
-				if((memory_instruction>>26 & ((1<<5)-1))== 8)
-				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
-
-				num_sw = 0;
-				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
-
-				empty_dram = false;
-				continue;
-			}
-			else empty_dram = true;
-		}
-		cycle = max(req_cycle,cycle+1);
-	}
-	cout<<endl;
-	if(pending_instruction!=-1)
-	{cout<<"Instruction : "<<pending_instruction<<" of core : "<<core_of_ins[pending_instruction]<<" has not completed in execution and will ";
-	cout<<"finish at cycle : "<<pending_finish<<endl<<endl;}
-
-	cout<<"The instructions remaining in dram which have not been executed are \n";
-	int first = 0;
-	while(head->next->data != -1)
-	{	
-		first = 1;
-		Node* temp = head -> next;		//selection for next row instruction.
-				
-		int ins = temp-> data;
-		
-		temp->prev->next = temp->next;
-		temp->next->prev = temp->prev;
-		cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<endl;
-	}
-	if(first==0){cout<<"NONE\n\n";}
-	else cout<<endl;
-	//cerr << memory[4][982];
-	for(int i=0;i<N;i++)
-	{
-		if(core_remaining.find(i)!=core_remaining.end())
-		{cout<<"Remaining number of instructions in core :"<<i<<" were "<<exit_instruction[i]-cur_instruction[i]<<endl;}
-		else
-		{cout<<"Core : "<<i<<" completed successfully"<<endl;}
-	}
-
-	cout<<"\nTotal number of cycles : "<<min(max(cycle,req_cycle)-1,M)<<endl<<"Total number of row buffer updates : "<<row_updates<<endl;
 }
