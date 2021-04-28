@@ -172,16 +172,16 @@ int main(int argc,char* argv[])
 						
 				if(add/1024 == buffer_row)
 				{
-					req_cycle = cycle + col_delay + 1;
+					req_cycle = cycle + col_delay;
 				}		
 				else if(num_sw!=0) 
 				{
 					write_row(memory,buffer,buffer_row);
-					req_cycle = cycle + 2*row_delay+ col_delay+1;
+					req_cycle = cycle + 2*row_delay+ col_delay;
 					row_updates++;
 					num_sw = 0;
 				}
-				else {req_cycle = cycle + row_delay+ col_delay+1;num_sw = 0;}
+				else {req_cycle = cycle + row_delay+ col_delay;num_sw = 0;}
 
 				buffer_row = add/1024;
 				copy_row(memory,buffer,buffer_row);
@@ -193,8 +193,8 @@ int main(int argc,char* argv[])
 					break;
 				}				
 
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
-				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle+1<<" - "<<req_cycle-1;
+				//cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<< ": DRAM request issued "<<endl;
+				cout<<"core :"<<(core_of_ins[ins])<<" line number "<<ins - start[(core_of_ins[ins])]<<" : cycle "<<cycle<<" - "<<req_cycle-1;
 
 				int type = (memory_instruction>>26 & ((1<<5)-1));
 				if(type == 8)
