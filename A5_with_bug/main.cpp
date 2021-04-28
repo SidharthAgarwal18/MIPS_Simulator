@@ -29,10 +29,7 @@ struct Node
 void free (int ins,int R_used[],int busy[])
 {
 	int s = R_used[ins];
-	//cout << s << busy[s];
 	if(busy[s]==1) busy[s] = 0;
-	else if(busy[s]>0) busy[s] = busy[s] - 2;
-	//cout <<busy[s];
 	return ;
 }
 
@@ -53,7 +50,7 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 5;
+		N = 4;
 		M = 500;
 	}
 	else
@@ -65,13 +62,6 @@ int main(int argc,char* argv[])
 	}
 	string output_file_name = "out.txt";
 	int memory[1024][256] = {0};
-	for(int r=0;r<1024;r++)
-	{
-		for(int c=0;c<256;c++)
-		{
-			memory[r][c] = 0;
-		}
-	}
 
 	int R[N][32] = {0};
 	int busy[N][32] = {0};
@@ -79,10 +69,7 @@ int main(int argc,char* argv[])
 	int buffer[256];
 	string hash[32];
 
-	unordered_map<int,int> row_blocking_lw[N][32];			//For next row selection
-	unordered_map<int,int> row_blocking_sw[N][32];
 	bool blocked[N] = {false};								//Is core 'I' blocked
-	unordered_set<int> rows_involved_when_blocked[N];		//Set to store row to load..
 	int priority[N] = {-1};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
 	for(int i=0;i<N;i++) priority[i] = -1;
 
@@ -90,10 +77,9 @@ int main(int argc,char* argv[])
 	int row_updates = 0;		//Implement this later
 	int num_sw = 0;				//This too..
 
-	queue<Node* > same_row[1024];
-
-	Node* head = new Node(-1);
+	Node* head = new Node(-1);			//DLL to maintain wait buffer
 	Node* tail = new Node(-1);
+	int wait_buffer_size = 0;
 	head -> next = tail;
 	head ->prev = nullptr;
 	tail -> prev = head;
@@ -116,7 +102,7 @@ int main(int argc,char* argv[])
 	int pending_instruction =-1;
 	int pending_finish = -1;
 
-	vector<int> core_of_ins;			//stores core number of instruction and gives in O(1)
+	vector<int> core_of_ins;			//stores core number of instruction
 	freopen("out.txt","w",stdout);
 
 	for(int I=0;I<N;I++)				//for file reading
@@ -164,12 +150,6 @@ int main(int argc,char* argv[])
 		cur_instruction[i] = main_instruction[i];
 	}
 
-	unordered_set<int> core_remaining;
-	for(int I=0;I<N;I++)
-	{
-		core_remaining.insert(I);
-	}
-
 	while(cycle <= M && core_remaining.size()!=0)
 	{
 		//cerr << cycle <<" "<< blocked[0] <<endl;
@@ -189,6 +169,7 @@ int main(int argc,char* argv[])
 
 				temp->prev->next = temp->next;		//delete node from common queue in O(1)
 				temp->next->prev = temp->prev;
+				wait_buffer_size--;
 
 				int memory_instruction = memory[ins/256][ins%256];
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;		//if sw instruction.
@@ -199,8 +180,6 @@ int main(int argc,char* argv[])
 				{
 					pending_instruction = ins;
 					pending_finish = req_cycle;
-					if(empty_dram) cycle++;
-					empty_dram = false;
 					break;
 				}
 
@@ -210,10 +189,6 @@ int main(int argc,char* argv[])
 				{cout<<": "<<hash[(R_used[ins])]<<" = ";}
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
-				if(type == 8) {row_blocking_lw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
-				if(type == 9) {row_blocking_sw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
-				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
-				empty_dram = false;
 				continue;
 			}
 			else if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
@@ -243,6 +218,7 @@ int main(int argc,char* argv[])
 
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
+				wait_buffer_size--;
 				int memory_instruction = memory[ins/256][ins%256];
 								
 				if(num_sw!=0) 
@@ -261,8 +237,6 @@ int main(int argc,char* argv[])
 				{
 					pending_instruction = ins;
 					pending_finish = req_cycle;
-					if(empty_dram) cycle++;
-					empty_dram = false;
 					break;
 				}				
 
@@ -277,15 +251,8 @@ int main(int argc,char* argv[])
 
 				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
-
-				if(type == 8) {row_blocking_lw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
-				if(type == 9) {row_blocking_sw[core_of_ins[ins]][R_used[ins]][buffer_row]--;}
-
-				if(empty_dram) cycle++;		//if dram was empty we did cycle-- here it gets corrected before core comes.
-				empty_dram = false;
 				continue;
 			}
-			else empty_dram = true;
 		}
 		for(int I=0;I<N;I++)		//processing each core
 		{
@@ -296,10 +263,10 @@ int main(int argc,char* argv[])
 				int type = ((1<<5)-1) & (memory_instruction>>26);
 				int prev_instruction = cur_instruction[I];
 
-				if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
-				else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
-				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
-				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
+				if(type==1 || type==2 || type==3 || type==4) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,priority);
+				else if(type==10) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,priority);
+				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,end_of_instruction,cur_instruction[I],cycle,I,start[(core_of_ins[(cur_instruction[I])])],blocked,priority);
+				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,start[(core_of_ins[(cur_instruction[I])])],blocked,priority);
 				else if(type == 8 || type ==9)
 				{
 					if(buffer_row == -1)
@@ -311,9 +278,6 @@ int main(int argc,char* argv[])
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
 						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority);
-
-						if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][row]++;}
-						if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][row]++;}
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						if(req_cycle<=M)
@@ -327,21 +291,22 @@ int main(int argc,char* argv[])
 							{cout<<": "<<hash[(R_used[cur_instruction[I]])]<<" = ";}
 							else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 							cout<<R[I][(R_used[cur_instruction[I]])]<<endl;
-							if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][row]--;}
-							if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][row]--;}
 						}
 						else
 						{
 							pending_instruction = cur_instruction[I];
 							pending_finish = req_cycle;
 						}
-						empty_dram = false;								//dram is not empty.
 						cur_instruction[I]++;							//instruction will always run because first and dram is empty
 					}
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,rows_involved_when_blocked[I],row_blocking_sw[I],row_blocking_lw[I],priority))
+						if(dram_buffer_size == 31)
+						{
+							blocked[I] = true;				//core got blocked due to no more space in row buffer
+						}
+						else if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,end_of_instruction,busy[I],R_used,buffer,blocked,priority))
 						{
 							//cout<<instruction<<endl;
 							int add = address_of_instruction(memory_instruction,R[I],end_of_instruction);
@@ -354,13 +319,12 @@ int main(int argc,char* argv[])
 							temp -> next = tail;
 							tail->prev->next = temp;
 							tail->prev = temp;
+							wait_buffer_size++;
 
 							if(type == 8) {row_blocking_lw[I][R_used[cur_instruction[I]]][add/1024]++;}
 							if(type == 9) {row_blocking_sw[I][R_used[cur_instruction[I]]][add/1024]++;}
 
-							same_row[add/1024].push(temp);		//pushed in appropriate row.
 							cur_instruction[I]++;
-							if(empty_dram) {cycle--;empty_dram = false;}	//if dram is empty it will be executed in the same cycle there we will do cycle++ dont worry.
 						}
 					}
 				}
@@ -370,12 +334,11 @@ int main(int argc,char* argv[])
 				//cout<<req_cycle<<" "<<cycle<<endl;
 			}
 		}
-
 		cycle++;
 		req_cycle = max(req_cycle,cycle); //to ensure req_cycle>=cycle.
-		
 	}
-	while(cycle<=M && empty_dram==false)
+	cycle = req_cycle;
+	while(cycle<=M)
 	{
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
@@ -489,7 +452,7 @@ int main(int argc,char* argv[])
 	}
 	if(first==0){cout<<"NONE\n\n";}
 	else cout<<endl;
-	cerr << memory[4][982];
+	//cerr << memory[4][982];
 	for(int i=0;i<N;i++)
 	{
 		if(core_remaining.find(i)!=core_remaining.end())

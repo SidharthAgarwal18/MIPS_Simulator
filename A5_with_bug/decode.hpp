@@ -6,7 +6,7 @@
 using namespace std;
 #include "basic.hpp"
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],unordered_set<int>& rows_involved_when_blocked,unordered_map<int,int> row_blocking_sw[],unordered_map<int,int> row_blocking_lw[],int priority[])
+int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
 {
 	int r3 = ((1<<5)-1) & (memory_instruction>>11);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -16,41 +16,6 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r3]==1 || busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 			//if either of them is busy dont move forward
 	{
-		rows_involved_when_blocked.clear();
-		priority[core] = 0;
-		blocked[core] = true;
-		for(auto x:row_blocking_lw[r3])
-		{	
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0 && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_lw[r2])
-		{	
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_lw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_sw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
 		return instruction;
 	}
 	else
@@ -67,7 +32,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	return instruction+1;
 }
 
-int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],unordered_set<int>& rows_involved_when_blocked,unordered_map<int,int> row_blocking_sw[],unordered_map<int,int> row_blocking_lw[],int priority[])
+int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
 {
 	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -77,33 +42,6 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	
 	if(busy[r2]==1 || busy[r1]==1 || busy[r1]>=2) 							//if either of them is busy dont move forward
 	{
-		rows_involved_when_blocked.clear();
-		priority[core] = 0;
-		blocked[core] = true;
-		for(auto x:row_blocking_lw[r2])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_lw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_sw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
 		return instruction;
 	}
 	else
@@ -117,7 +55,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,int busy[],in
 	return instruction+1;
 }
 
-int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle,int core,int ref_ins,bool blocked[],unordered_set<int>& rows_involved_when_blocked,unordered_map<int,int> row_blocking_sw[],unordered_map<int,int> row_blocking_lw[],int priority[])
+int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle,int core,int ref_ins,bool blocked[],int priority[])
 {
 	int new_instruction = ((1<<26)-1) & (memory_instruction);
 	if(new_instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
@@ -166,7 +104,7 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,int busy[],int R_used[],int buffer[],bool blocked[],unordered_set<int>& rows_involved_when_blocked,unordered_map<int,int> row_blocking_sw[],unordered_map<int,int> row_blocking_lw[],int priority[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,int busy[],int R_used[],int buffer[],bool blocked[],int priority[])
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -174,36 +112,6 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 
 	if(busy[r2]==1 || busy[r1]==1 || (busy[r1]>=2 && op==8)) 
 	{
-		rows_involved_when_blocked.clear();
-		priority[core] = 0;
-		blocked[core] = true;
-		for(auto x:row_blocking_lw[r2])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_lw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		if(op==8)
-		{
-			for(auto x:row_blocking_sw[r1])
-			{
-				if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-				{rows_involved_when_blocked.insert(x.first);}
-		
-				if(priority[core]==-1) priority[core] = 0;
-				priority[core] += ceil(x.second/10);
-			}
-		}
 		return instruction;
 	}
 	else
@@ -211,7 +119,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 
 	//busy[r2] = 1;												//design  decision.
 	if(op==8)busy[r1] = 1;						//only r1 is locked for lw and permanently 
-	else busy[r1] = busy[r1]+2;							//value of r2 can be accessed but not changed
+	//else busy[r1] = busy[r1]+2;							//value of r2 can be accessed but not changed
 	R_used[instruction] = r1;
 	
 	int sign = (memory_instruction & (1<<15));
@@ -229,7 +137,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	return instruction+1;
 }
 
-int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],unordered_set<int>& rows_involved_when_blocked,unordered_map<int,int> row_blocking_sw[],unordered_map<int,int> row_blocking_lw[],int priority[])
+int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
 {
 	int next_instruction = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -237,25 +145,6 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,int busy[],in
 
 	if(busy[r1]==1 || busy[r2]==1) 
 	{
-		rows_involved_when_blocked.clear();
-		priority[core] = 0;
-		blocked[core] = true;
-		for(auto x:row_blocking_lw[r2])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
-		for(auto x:row_blocking_lw[r1])
-		{
-			if(rows_involved_when_blocked.find(x.first)!= rows_involved_when_blocked.end() && x.second != 0)
-			{rows_involved_when_blocked.insert(x.first);}
-		
-			if(priority[core]==-1) priority[core] = 0;
-			priority[core] += ceil(x.second/10);
-		}
 		return instruction;
 	}
 	else
