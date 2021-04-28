@@ -1,0 +1,199 @@
+core :0 line number 0: cycle 1: $s0 = 1000
+core :1 line number 0: cycle 1: $s0 = 5
+core :2 line number 0: cycle 1: $t0 = 900
+core :3 line number 0: cycle 1: $t0 = 1024
+core :4 line number 0: cycle 1: $t0 = 1024
+core :0 line number 1: cycle 2: $s1 = 0
+core :1 line number 1: cycle 2: $s1 = 0
+core :2 line number 1: cycle 2: $t3 = 1
+core :3 line number 1: cycle 2: $t1 = 2024
+core :4 line number 1: cycle 2: $t1 = 2024
+core :0 line number 2: cycle 3: $s2 = 10
+core :1 line number 2: cycle 3: $s2 = 1
+core :2 line number 2 : cycle 3: DRAM request issued 
+core :2 line number 2 : cycle 4 - 15: $t4 = 0
+core :3 line number 2: cycle 3: $t2 = 3024
+core :4 line number 2: cycle 3: $t2 = 3024
+core :0 line number 3: cycle 4: $t1 = 0
+core :1 line number 3: cycle 4: $s3 = 1
+core :2 line number 3: cycle 4: jumped to line number 5
+core :3 line number 3: cycle 4: $t3 = 4024
+core :4 line number 3: cycle 4: $t3 = 4024
+core :0 line number 4: cycle 5: $t1 = 1
+core :1 line number 4: cycle 5: $s4 = 1
+core :2 line number 5: cycle 5: $t0 = 19
+core :3 line number 4: cycle 5: $t4 = 5024
+core :4 line number 4: cycle 5: $t4 = 5024
+core :1 line number 5: cycle 6: $t0 = 0
+core :3 line number 5: cycle 6: $t5 = 6024
+core :4 line number 5: cycle 6: $t5 = 6024
+core :0 line number 6: cycle 7: $s0 = 1004
+core :1 line number 6: cycle 7: jumped to line number 8
+core :0 line number 7: cycle 8: $s1 = 1
+core :1 line number 8: cycle 8: $s1 = 5
+core :0 line number 8: cycle 9: $s3 = 1
+core :1 line number 9: cycle 9: $s3 = 5
+core :0 line number 9: cycle 10: jumped to line number 4
+core :1 line number 10: cycle 10: $s0 = 4
+core :1 line number 11: cycle 11: jumped to line number 5
+core :1 line number 5: cycle 12: $t0 = 0
+core :1 line number 6: cycle 13: jumped to line number 8
+core :1 line number 8: cycle 14: $s1 = 9
+core :1 line number 9: cycle 15: $s3 = 20
+core :0 line number 5 : cycle 16 - 17: memory address 1000-1003 = 1
+core :1 line number 10: cycle 16: $s0 = 3
+core :1 line number 11: cycle 17: jumped to line number 5
+core :3 line number 6 : cycle 18: DRAM request issued 
+core :3 line number 6 : cycle 19 - 40: $t0 = 0
+core :0 line number 4: cycle 18: $t1 = 2
+core :1 line number 5: cycle 18: $t0 = 0
+core :1 line number 6: cycle 19: jumped to line number 8
+core :0 line number 6: cycle 20: $s0 = 1008
+core :1 line number 8: cycle 20: $s1 = 12
+core :0 line number 7: cycle 21: $s1 = 2
+core :1 line number 9: cycle 21: $s3 = 60
+core :0 line number 8: cycle 22: $s3 = 1
+core :1 line number 10: cycle 22: $s0 = 2
+core :0 line number 9: cycle 23: jumped to line number 4
+core :1 line number 11: cycle 23: jumped to line number 5
+core :1 line number 5: cycle 24: $t0 = 0
+core :1 line number 6: cycle 25: jumped to line number 8
+core :1 line number 8: cycle 26: $s1 = 14
+core :1 line number 9: cycle 27: $s3 = 120
+core :1 line number 10: cycle 28: $s0 = 1
+core :1 line number 11: cycle 29: jumped to line number 5
+core :1 line number 5: cycle 30: $t0 = 0
+core :1 line number 6: cycle 31: jumped to line number 8
+core :1 line number 8: cycle 32: $s1 = 15
+core :1 line number 9: cycle 33: $s3 = 120
+core :1 line number 10: cycle 34: $s0 = 0
+core :1 line number 11: cycle 35: jumped to line number 5
+core :1 line number 5: cycle 36: $t0 = 1
+core :1 line number 6: cycle 37: jumped to line number 7
+core :1 line number 7: cycle 38: jumped to line number 12
+core :1 line number 12: cycle 39: $s1 = 15
+core :1 line number 13: cycle 40: $s3 = 120
+core :4 line number 6 : cycle 41 - 42: $t0 = 0
+core :4 line number 7 : cycle 43: DRAM request issued 
+core :4 line number 7 : cycle 44 - 55: $t1 = 0
+core :3 line number 7 : cycle 56 - 57: memory address 7024-7027 = 0
+core :4 line number 8 : cycle 58: DRAM request issued 
+core :4 line number 8 : cycle 59 - 80: $t2 = 0
+core :4 line number 11 : cycle 81 - 82: $t5 = 0
+core :3 line number 8 : cycle 83 - 84: memory address 8024-8027 = 0
+core :4 line number 9 : cycle 85: DRAM request issued 
+core :4 line number 9 : cycle 86 - 107: $t3 = 0
+core :3 line number 9 : cycle 108 - 109: $t0 = 0
+core :4 line number 10 : cycle 110: DRAM request issued 
+core :4 line number 10 : cycle 111 - 122: $t4 = 0
+core :3 line number 10 : cycle 123 - 124: memory address 10024-10027 = 0
+core :0 line number 5 : cycle 125: DRAM request issued 
+core :0 line number 5 : cycle 126 - 147: memory address 1004-1007 = 2
+core :4 line number 12 : cycle 148: DRAM request issued 
+core :4 line number 12 : cycle 149 - 170: $t4 = 0
+core :0 line number 4: cycle 148: $t1 = 3
+core :0 line number 6: cycle 150: $s0 = 1012
+core :0 line number 7: cycle 151: $s1 = 3
+core :0 line number 8: cycle 152: $s3 = 1
+core :0 line number 9: cycle 153: jumped to line number 4
+core :4 line number 13 : cycle 171 - 172: $t0 = 0
+core :4 line number 14 : cycle 173 - 174: $t3 = 0
+core :4 line number 15 : cycle 175 - 176: $t2 = 0
+core :4 line number 16 : cycle 177 - 178: $t1 = 0
+core :4 line number 17 : cycle 179 - 180: $t0 = 0
+core :4 line number 18 : cycle 181 - 182: $t3 = 0
+core :4 line number 19 : cycle 183 - 184: $t4 = 0
+core :4 line number 20 : cycle 185 - 186: $t2 = 0
+core :4 line number 21 : cycle 187 - 188: $t3 = 0
+core :4 line number 22 : cycle 189 - 190: $t5 = 0
+core :4 line number 23 : cycle 191 - 192: $t0 = 0
+core :3 line number 11 : cycle 193: DRAM request issued 
+core :3 line number 11 : cycle 194 - 205: $t0 = 0
+core :4 line number 24: cycle 193: $t0 = 12
+core :4 line number 25: cycle 194: $t1 = 24
+core :4 line number 26: cycle 195: $t2 = 16
+core :4 line number 27: cycle 196: $t3 = 20
+core :4 line number 28: cycle 197: $t4 = 124
+core :4 line number 29: cycle 198: $t5 = 120
+core :0 line number 5 : cycle 206: DRAM request issued 
+core :0 line number 5 : cycle 207 - 218: memory address 1008-1011 = 3
+core :3 line number 12 : cycle 219: DRAM request issued 
+core :3 line number 12 : cycle 220 - 241: memory address 6024-6027 = 0
+core :0 line number 4: cycle 219: $t1 = 4
+core :0 line number 6: cycle 221: $s0 = 1016
+core :0 line number 7: cycle 222: $s1 = 4
+core :0 line number 8: cycle 223: $s3 = 1
+core :0 line number 9: cycle 224: jumped to line number 4
+core :0 line number 5 : cycle 242: DRAM request issued 
+core :0 line number 5 : cycle 243 - 264: memory address 1012-1015 = 4
+core :3 line number 13 : cycle 265: DRAM request issued 
+core :3 line number 13 : cycle 266 - 287: $t0 = 0
+core :0 line number 4: cycle 265: $t1 = 5
+core :0 line number 6: cycle 267: $s0 = 1020
+core :0 line number 7: cycle 268: $s1 = 5
+core :0 line number 8: cycle 269: $s3 = 1
+core :0 line number 9: cycle 270: jumped to line number 4
+core :0 line number 5 : cycle 288: DRAM request issued 
+core :0 line number 5 : cycle 289 - 300: memory address 1016-1019 = 5
+core :3 line number 14 : cycle 301: DRAM request issued 
+core :3 line number 14 : cycle 302 - 323: memory address 8024-8027 = 0
+core :0 line number 4: cycle 301: $t1 = 6
+core :0 line number 6: cycle 303: $s0 = 1024
+core :0 line number 7: cycle 304: $s1 = 6
+core :0 line number 8: cycle 305: $s3 = 1
+core :0 line number 9: cycle 306: jumped to line number 4
+core :0 line number 5 : cycle 324: DRAM request issued 
+core :0 line number 5 : cycle 325 - 346: memory address 1020-1023 = 6
+core :3 line number 15 : cycle 347: DRAM request issued 
+core :3 line number 15 : cycle 348 - 369: $t0 = 0
+core :0 line number 4: cycle 347: $t1 = 7
+core :0 line number 6: cycle 349: $s0 = 1028
+core :0 line number 7: cycle 350: $s1 = 7
+core :0 line number 8: cycle 351: $s3 = 1
+core :0 line number 9: cycle 352: jumped to line number 4
+core :0 line number 5 : cycle 370: DRAM request issued 
+core :0 line number 5 : cycle 371 - 382: memory address 1024-1027 = 7
+core :3 line number 16 : cycle 383: DRAM request issued 
+core :3 line number 16 : cycle 384 - 405: memory address 10024-10027 = 0
+core :0 line number 4: cycle 383: $t1 = 8
+core :0 line number 6: cycle 385: $s0 = 1032
+core :0 line number 7: cycle 386: $s1 = 8
+core :0 line number 8: cycle 387: $s3 = 1
+core :0 line number 9: cycle 388: jumped to line number 4
+core :0 line number 5 : cycle 406: DRAM request issued 
+core :0 line number 5 : cycle 407 - 428: memory address 1028-1031 = 8
+core :3 line number 17 : cycle 429: DRAM request issued 
+core :3 line number 17 : cycle 430 - 451: $t0 = 0
+core :0 line number 4: cycle 429: $t1 = 9
+core :0 line number 6: cycle 431: $s0 = 1036
+core :0 line number 7: cycle 432: $s1 = 9
+core :0 line number 8: cycle 433: $s3 = 1
+core :0 line number 9: cycle 434: jumped to line number 4
+core :0 line number 5 : cycle 452: DRAM request issued 
+core :0 line number 5 : cycle 453 - 464: memory address 1032-1035 = 9
+core :3 line number 18 : cycle 465: DRAM request issued 
+core :3 line number 18 : cycle 466 - 487: memory address 6024-6027 = 0
+core :0 line number 4: cycle 465: $t1 = 10
+core :0 line number 6: cycle 467: $s0 = 1040
+core :0 line number 7: cycle 468: $s1 = 10
+core :0 line number 8: cycle 469: $s3 = 0
+core :0 line number 9: cycle 470: jumped to line number 10
+core :0 line number 10: cycle 471: $s0 = 1000
+core :0 line number 11: cycle 472: $s1 = 0
+core :0 line number 12: cycle 473: $s3 = 0
+core :0 line number 13: cycle 474: $s2 = 9
+core :0 line number 15: cycle 476: $s0 = 1004
+
+Instruction : 5 of core : 0 has not completed in execution and will finish at cycle : 511
+
+The instructions remaining in dram which have not been executed are 
+core :0 line number 14
+
+Remaining number of instructions in core :0 were 11
+Core : 1 completed successfully
+Core : 2 completed successfully
+Remaining number of instructions in core :3 were 41
+Core : 4 completed successfully
+
+Total number of cycles : 500
+Total number of row buffer updates : 33

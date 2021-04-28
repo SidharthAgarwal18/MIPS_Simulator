@@ -4,15 +4,6 @@ main:
 	addi $s2, $zero, 1
 	addi $s3, $zero, 1
 	addi $s4, $zero, 1
-	addi $s2, $zero, 1
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
-	addi $t1, $zero, 0
 
 check: 
 	slt $t0, $s0, $s2
