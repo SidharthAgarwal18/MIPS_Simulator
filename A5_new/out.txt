@@ -161,68 +161,68 @@ core :0 line number 14 : cycle 153 - 154: $t0 = 0
 core :0 line number 15: cycle 152: $s0 = 1024
 core :0 line number 17: cycle 153: Instruction saved in wait buffer
 core :0 line number 16 : cycle 155: DRAM request issued 
-core :0 line number 16 : cycle 156 - 167: $t1 = 7
-core :0 line number 17: cycle 168: $t2 = 7
-core :0 line number 19: cycle 169: Instruction saved in wait buffer
-core :0 line number 18 : cycle 170: DRAM request issued 
-core :0 line number 18 : cycle 171 - 172: memory address 1024-1027 = 7
-core :0 line number 19: cycle 170: $s1 = 6
-core :0 line number 20: cycle 171: $s3 = 1
-core :0 line number 21: cycle 172: jumped to line number 14
-core :0 line number 15: cycle 173: Instruction saved in wait buffer
-core :0 line number 14 : cycle 174: DRAM request issued 
-core :0 line number 14 : cycle 175 - 176: $t0 = 0
-core :0 line number 15: cycle 174: $s0 = 1028
-core :0 line number 17: cycle 175: Instruction saved in wait buffer
-core :0 line number 16 : cycle 177: DRAM request issued 
-core :0 line number 16 : cycle 178 - 179: $t1 = 0
-core :0 line number 17: cycle 180: $t2 = 0
-core :0 line number 19: cycle 181: Instruction saved in wait buffer
-core :0 line number 18 : cycle 182: DRAM request issued 
-core :0 line number 18 : cycle 183 - 184: memory address 1028-1031 = 0
-core :0 line number 19: cycle 182: $s1 = 7
-core :0 line number 20: cycle 183: $s3 = 1
-core :0 line number 21: cycle 184: jumped to line number 14
-core :0 line number 15: cycle 185: Instruction saved in wait buffer
-core :0 line number 14 : cycle 186: DRAM request issued 
-core :0 line number 14 : cycle 187 - 188: $t0 = 0
-core :0 line number 15: cycle 186: $s0 = 1032
-core :0 line number 17: cycle 187: Instruction saved in wait buffer
-core :0 line number 16 : cycle 189: DRAM request issued 
-core :0 line number 16 : cycle 190 - 191: $t1 = 0
-core :0 line number 17: cycle 192: $t2 = 0
-core :0 line number 19: cycle 193: Instruction saved in wait buffer
-core :0 line number 18 : cycle 194: DRAM request issued 
-core :0 line number 18 : cycle 195 - 196: memory address 1032-1035 = 0
-core :0 line number 19: cycle 194: $s1 = 8
-core :0 line number 20: cycle 195: $s3 = 1
-core :0 line number 21: cycle 196: jumped to line number 14
-core :0 line number 15: cycle 197: Instruction saved in wait buffer
-core :0 line number 14 : cycle 198: DRAM request issued 
-core :0 line number 14 : cycle 199 - 200: $t0 = 0
-core :0 line number 15: cycle 198: $s0 = 1036
-core :0 line number 17: cycle 199: Instruction saved in wait buffer
-core :0 line number 16 : cycle 201: DRAM request issued 
-core :0 line number 16 : cycle 202 - 203: $t1 = 0
-core :0 line number 17: cycle 204: $t2 = 0
-core :0 line number 19: cycle 205: Instruction saved in wait buffer
-core :0 line number 18 : cycle 206: DRAM request issued 
-core :0 line number 18 : cycle 207 - 208: memory address 1036-1039 = 0
-core :0 line number 19: cycle 206: $s1 = 9
-core :0 line number 20: cycle 207: $s3 = 0
-core :0 line number 21: cycle 208: jumped to line number 22
-core :0 line number 23: cycle 209: Instruction saved in wait buffer
-core :0 line number 22 : cycle 210: DRAM request issued 
-core :0 line number 22 : cycle 211 - 212: memory address 1036-1039 = 0
-core :0 line number 24: cycle 210: Instruction saved in wait buffer
-core :0 line number 25: cycle 211: Instruction saved in wait buffer
-core :0 line number 26: cycle 212: Instruction saved in wait buffer
-core :0 line number 23 : cycle 213: DRAM request issued 
-core :0 line number 23 : cycle 214 - 215: memory address 1036-1039 = 0
-core :0 line number 27: cycle 213: Instruction saved in wait buffer
-core :0 line number 24 : cycle 216: DRAM request issued 
-core :0 line number 24 : cycle 217 - 218: memory address 1036-1039 = 0
-core :0 line number 25 : cycle 219: DRAM request issued 
-core :0 line number 25 : cycle 220 - 221: memory address 1036-1039 = 0
-core :0 line number 26 : cycle 222: DRAM request issued 
-core :0 line number 26 : cycle 223 - 224: memory address 1036-1039 = 0
+core :0 line number 16 : cycle 156 - 177: $t1 = 7
+core :0 line number 17: cycle 178: $t2 = 7
+core :0 line number 19: cycle 179: Instruction saved in wait buffer
+core :0 line number 18 : cycle 180: DRAM request issued 
+core :0 line number 18 : cycle 181 - 182: memory address 1024-1027 = 7
+core :0 line number 19: cycle 180: $s1 = 6
+core :0 line number 20: cycle 181: $s3 = 1
+core :0 line number 21: cycle 182: jumped to line number 14
+core :0 line number 15: cycle 183: Instruction saved in wait buffer
+core :0 line number 14 : cycle 184: DRAM request issued 
+core :0 line number 14 : cycle 185 - 186: $t0 = 0
+core :0 line number 15: cycle 184: $s0 = 1028
+core :0 line number 17: cycle 185: Instruction saved in wait buffer
+core :0 line number 16 : cycle 187: DRAM request issued 
+core :0 line number 16 : cycle 188 - 189: $t1 = 0
+core :0 line number 17: cycle 190: $t2 = 0
+core :0 line number 19: cycle 191: Instruction saved in wait buffer
+core :0 line number 18 : cycle 192: DRAM request issued 
+core :0 line number 18 : cycle 193 - 194: memory address 1028-1031 = 0
+core :0 line number 19: cycle 192: $s1 = 7
+core :0 line number 20: cycle 193: $s3 = 1
+core :0 line number 21: cycle 194: jumped to line number 14
+core :0 line number 15: cycle 195: Instruction saved in wait buffer
+core :0 line number 14 : cycle 196: DRAM request issued 
+core :0 line number 14 : cycle 197 - 198: $t0 = 0
+core :0 line number 15: cycle 196: $s0 = 1032
+core :0 line number 17: cycle 197: Instruction saved in wait buffer
+core :0 line number 16 : cycle 199: DRAM request issued 
+core :0 line number 16 : cycle 200 - 201: $t1 = 0
+core :0 line number 17: cycle 202: $t2 = 0
+core :0 line number 19: cycle 203: Instruction saved in wait buffer
+core :0 line number 18 : cycle 204: DRAM request issued 
+core :0 line number 18 : cycle 205 - 206: memory address 1032-1035 = 0
+core :0 line number 19: cycle 204: $s1 = 8
+core :0 line number 20: cycle 205: $s3 = 1
+core :0 line number 21: cycle 206: jumped to line number 14
+core :0 line number 15: cycle 207: Instruction saved in wait buffer
+core :0 line number 14 : cycle 208: DRAM request issued 
+core :0 line number 14 : cycle 209 - 210: $t0 = 0
+core :0 line number 15: cycle 208: $s0 = 1036
+core :0 line number 17: cycle 209: Instruction saved in wait buffer
+core :0 line number 16 : cycle 211: DRAM request issued 
+core :0 line number 16 : cycle 212 - 213: $t1 = 0
+core :0 line number 17: cycle 214: $t2 = 0
+core :0 line number 19: cycle 215: Instruction saved in wait buffer
+core :0 line number 18 : cycle 216: DRAM request issued 
+core :0 line number 18 : cycle 217 - 218: memory address 1036-1039 = 0
+core :0 line number 19: cycle 216: $s1 = 9
+core :0 line number 20: cycle 217: $s3 = 0
+core :0 line number 21: cycle 218: jumped to line number 22
+core :0 line number 23: cycle 219: Instruction saved in wait buffer
+core :0 line number 22 : cycle 220: DRAM request issued 
+core :0 line number 22 : cycle 221 - 222: memory address 1036-1039 = 0
+core :0 line number 24: cycle 220: Instruction saved in wait buffer
+core :0 line number 25: cycle 221: Instruction saved in wait buffer
+core :0 line number 26: cycle 222: Instruction saved in wait buffer
+core :0 line number 23 : cycle 223: DRAM request issued 
+core :0 line number 23 : cycle 224 - 225: memory address 1036-1039 = 0
+core :0 line number 27: cycle 223: Instruction saved in wait buffer
+core :0 line number 24 : cycle 226: DRAM request issued 
+core :0 line number 24 : cycle 227 - 228: memory address 1036-1039 = 0
+core :0 line number 25 : cycle 229: DRAM request issued 
+core :0 line number 25 : cycle 230 - 231: memory address 1036-1039 = 0
+core :0 line number 26 : cycle 232: DRAM request issued 
+core :0 line number 26 : cycle 233 - 234: memory address 1036-1039 = 0

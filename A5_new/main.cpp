@@ -179,8 +179,9 @@ int main(int argc,char* argv[])
 					write_row(memory,buffer,buffer_row);
 					req_cycle = cycle + 2*row_delay+ col_delay+1;
 					row_updates++;
+					num_sw = 0;
 				}
-				else req_cycle = cycle + row_delay+ col_delay+1;
+				else {req_cycle = cycle + row_delay+ col_delay+1;num_sw = 0;}
 
 				buffer_row = add/1024;
 				copy_row(memory,buffer,buffer_row);
@@ -201,7 +202,6 @@ int main(int argc,char* argv[])
 				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
 				cout<<R[core_of_ins[ins]][(R_used[ins])]<<endl;
 
-				num_sw = 0;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 				continue;
 			}
