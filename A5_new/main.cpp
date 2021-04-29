@@ -13,6 +13,7 @@ struct Node
 	int data;
 	int saved_address;
 	int core;
+	int data_entered;
 	Node* next;
 	Node* prev;
 	Node()
@@ -52,7 +53,7 @@ int main(int argc,char* argv[])
 		row_delay = 10;
 		col_delay = 2;		
 		N = 3;
-		M = 2500;
+		M = 1500;
 	}
 	else
 	{
@@ -77,6 +78,17 @@ int main(int argc,char* argv[])
 	bool blocked[N] = {false};								//Is core 'I' blocked
 	int priority[N] = {-1};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
 	for(int i=0;i<N;i++) priority[i] = -1;
+
+	for(int i=0;i<N;i++)
+	{
+		for(int j=0;j<N;j++)
+		{
+			R[i][j] =  0;
+			busy[i][j] = 0;
+		}
+		write_port[i] = 0;
+		blocked[i] = false;
+	}
 
 	int row_updates = 0;		//Implement this later
 	int num_sw = 0;				//This too..
@@ -172,6 +184,7 @@ int main(int argc,char* argv[])
 				prev_dram_ins = ins;
 
 				int add = temp->saved_address;
+				int enter_data = temp->data_entered;
 
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
@@ -208,9 +221,9 @@ int main(int argc,char* argv[])
 
 				int type = (memory_instruction>>26 & ((1<<5)-1));
 				if(type == 8)
-				{cout<<": "<<hash[(R_used[core_in_dram][ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[core_in_dram][(R_used[core_in_dram][ins])]<<endl;
+				{cout<<": "<<hash[(R_used[core_in_dram][ins])]<<" = "<<R[core_in_dram][(R_used[core_in_dram][ins])]<<endl;}
+				else cout<<": memory address "<<add<<"-"<<add+3<<" = "<<enter_data<<endl;
+				
 
 				write_port[core_in_dram] = req_cycle - 1;
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
@@ -277,7 +290,8 @@ int main(int argc,char* argv[])
 							temp->saved_address = add;			//save address here becasue might change due to change in Reg.value
 							temp->core = I;
 
-							if(type==9) row_updates++;			
+							if(type==9) 
+							{row_updates++;	temp->data_entered = R[I][((1<<5)-1) & (memory_instruction>>21)];}		
 
 							temp -> prev = tail -> prev;		//insertions in dequeue.
 							temp -> next = tail;
@@ -323,6 +337,7 @@ int main(int argc,char* argv[])
 
 				prev_dram_ins = ins;
 				int add = temp->saved_address;
+				int enter_data = temp->data_entered;
 
 				temp->prev->next = temp->next;
 				temp->next->prev = temp->prev;
@@ -360,9 +375,9 @@ int main(int argc,char* argv[])
 
 				int type = (memory_instruction>>26 & ((1<<5)-1));
 				if(type == 8)
-				{cout<<": "<<hash[(R_used[core_in_dram][ins])]<<" = ";}
-				else cout<<": memory address "<<add<<"-"<<add+3<<" = ";
-				cout<<R[core_in_dram][(R_used[core_in_dram][ins])]<<endl;
+				{cout<<": "<<hash[(R_used[core_in_dram][ins])]<<" = "<<R[core_in_dram][(R_used[core_in_dram][ins])]<<endl;}
+				else cout<<": memory address "<<add<<"-"<<add+3<<" = "<<enter_data<<endl;;
+				
 
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 			}
