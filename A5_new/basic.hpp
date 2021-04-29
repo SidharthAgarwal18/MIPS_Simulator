@@ -6,6 +6,28 @@
 using namespace std;
 
 
+struct Node
+{
+	int data;
+	int saved_address;
+	int core;
+	int data_entered;
+	int node_priority;
+	Node* next;
+	Node* prev;
+	Node()
+	{
+		data = 0;
+		saved_address = 0;
+	}
+	Node(int x)
+	{
+		data = x;
+		saved_address = 0;
+	}
+};
+
+
 //Basic utility functions
 int StringtoNumber(string name,int instruction)
 {

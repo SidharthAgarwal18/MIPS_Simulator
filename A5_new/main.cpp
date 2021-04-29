@@ -8,31 +8,10 @@ using namespace std;
 #include "saving_instructions.hpp"
 #include "decode.hpp"
 
-struct Node
-{
-	int data;
-	int saved_address;
-	int core;
-	int data_entered;
-	int node_priority;
-	Node* next;
-	Node* prev;
-	Node()
-	{
-		data = 0;
-		saved_address = 0;
-	}
-	Node(int x)
-	{
-		data = x;
-		saved_address = 0;
-	}
-};
-
-void free (int ins,int R_used[],int busy[])
+void free (int ins,int R_used[],pair<int,Node*> busy[])
 {
 	int s = R_used[ins];
-	if(busy[s]==1) busy[s] = 0;
+	if(busy[s].first==1) busy[s].first = 0;
 	return ;
 }
 
@@ -48,22 +27,22 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[])
 {
 	//return head->next;		//comment this to run after this
 
-
 	for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
 	{
 		if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
 	}
-	/*
 	for(int I =0;I<N;I++)
 	{
 		if(blocked[I] == true)
 		{
-			for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
+			auto req_row_ins = head;
+			while(req_row_ins != tail)
 			{
-				if(same_row_ins-> core == I) return same_row_ins;
+				if(req_row_ins -> saved_address /1024 == buffer_row) return req_row_ins;
+				req_row_ins = req_row_ins->next;
 			}
 		}
-	}*/
+	}
 	return head->next;
 }
 
@@ -93,7 +72,7 @@ int main(int argc,char* argv[])
 	int MAX_WAIT_BUFFER_SIZE = 32;			
 	int write_port[N] = {0};				//saves instruction number at which write_port is already busy.
 	int R[N][32] = {0};
-	int busy[N][32] = {0};
+	pair<int,Node*> busy[N][32];
 	int buffer_row = -1;
 	int buffer[256];
 	string hash[32];
@@ -107,7 +86,7 @@ int main(int argc,char* argv[])
 		for(int j=0;j<N;j++)
 		{
 			R[i][j] =  0;
-			busy[i][j] = 0;
+			busy[i][j].first = 0;
 		}
 		write_port[i] = 0;
 		blocked[i] = false;
@@ -308,7 +287,7 @@ int main(int argc,char* argv[])
 						// if below is check for wheather instrucion is runnable.
 						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority))
 						{
-							//blocked[I] = true;
+							blocked[I] = false;
 							//cout<<instruction<<endl;
 							int add = address_of_instruction(memory_instruction,R[I],exit_instruction[I],((1024/N)*I*1024));
 							Node* temp = new Node(cur_instruction[I]);
