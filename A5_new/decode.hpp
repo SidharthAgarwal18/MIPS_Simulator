@@ -6,7 +6,7 @@
 using namespace std;
 #include "basic.hpp"
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
+int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size,int prev_dram_ins)
 {
 	int r3 = ((1<<5)-1) & (memory_instruction>>11);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -15,7 +15,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	
-	if(busy[r1].first==1 && busy[r2].first==0 && busy[r3].first==0)
+	if((busy[r1].first==1 && busy[r2].first==0 && busy[r3].first==0) && busy[r1].second->data!=prev_dram_ins)
 	{
 		busy[r1].first = 0;
 
@@ -27,7 +27,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		temp->next->prev = temp->prev;
 		*wait_buffer_size = (*wait_buffer_size) -1;
 	}
-	else if(busy[r3].first==1 || busy[r2].first==1) 			//if either of them is busy dont move forward
+	else if(busy[r1].first==1 || busy[r3].first==1 || busy[r2].first==1) 			//if either of them is busy dont move forward
 	{
 		priority[core] = 0;
 		reg_used_when_blocked[0] = -1;
@@ -54,7 +54,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	return instruction+1;
 }
 
-int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
+int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size,int prev_dram_ins)
 {
 	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -62,7 +62,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	
-	if(busy[r1].first==1 && busy[r2].first==0)
+	if((busy[r1].first==1 && busy[r2].first==0) && busy[r1].second->data!=prev_dram_ins)
 	{
 		busy[r1].first = 0;
 
@@ -74,7 +74,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		temp->next->prev = temp->prev;
 		*wait_buffer_size = (*wait_buffer_size) -1;
 	}
-	else if(busy[r2].first==1) 							//if either of them is busy dont move forward
+	else if(busy[r1].first ==1 ||busy[r2].first==1) 							//if either of them is busy dont move forward
 	{
 		blocked[core] = true;
 		priority[core] = 0;
@@ -148,13 +148,13 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
+int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[],int reg_used_when_blocked[],int* wait_buffer_size,int prev_dram_ins)
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
-	if(busy[r1].first==1 && busy[r2].first==0)
+	if((busy[r1].first==1 && busy[r2].first==0) && busy[r1].second->data!=prev_dram_ins)
 	{
 		busy[r1].first = 0;
 
@@ -166,7 +166,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 		temp->next->prev = temp->prev;
 		*wait_buffer_size = (*wait_buffer_size) -1;
 	}
-	else if(busy[r2].first==1) 
+	else if(busy[r1].first==1 || busy[r2].first==1) 
 	{
 		blocked[core] = true;
 		priority[core] = 0;

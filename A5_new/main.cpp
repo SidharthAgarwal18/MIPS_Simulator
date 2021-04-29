@@ -267,8 +267,8 @@ int main(int argc,char* argv[])
 				int type = ((1<<5)-1) & (memory_instruction>>26);
 				int prev_instruction = cur_instruction[I];
 
-				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size);
-				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size);
+				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size,prev_dram_ins);
+				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size,prev_dram_ins);
 				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,exit_instruction[I],cur_instruction[I],cycle,I,0,blocked,priority,reg_used_when_blocked[I]);
 				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
 				else if((type == 8 || type ==9) && wait_buffer_size<MAX_WAIT_BUFFER_SIZE) 
@@ -281,7 +281,7 @@ int main(int argc,char* argv[])
 						buffer_row = row;
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
-						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size);
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size,prev_dram_ins);
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						core_in_dram = I;
@@ -310,7 +310,7 @@ int main(int argc,char* argv[])
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size))
+						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size,prev_dram_ins))
 						{
 							blocked[I] = false;
 							//cout<<instruction<<endl;
