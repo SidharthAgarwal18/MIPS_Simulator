@@ -315,6 +315,7 @@ int main(int argc,char* argv[])
 							}
 
 							wait_buffer_size++;
+							busy[I][R_used[I][cur_instruction[I]]].second = temp;
 							cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": instruction saved in wait buffer"<<endl;
 							cur_instruction[I]++;
 						}

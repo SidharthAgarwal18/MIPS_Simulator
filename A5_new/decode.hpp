@@ -16,6 +16,11 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	if(busy[r3].first==1 || busy[r2].first==1 || busy[r1].first==1) 			//if either of them is busy dont move forward
 	{
+		priority[core] = 0;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r3].first == 1) {int a = (busy[r3].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
@@ -43,6 +48,10 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	if(busy[r2].first==1 || busy[r1].first==1 ) 							//if either of them is busy dont move forward
 	{
 		blocked[core] = true;
+		priority[core] = 0;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
@@ -114,6 +123,10 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	if(busy[r2].first==1 || busy[r1].first==1) 
 	{
 		blocked[core] = true;
+		priority[core] = 0;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
@@ -151,6 +164,10 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	if(busy[r1].first==1 || busy[r2].first==1) 
 	{
 		blocked[core] = true;
+		priority[core] = 0;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
