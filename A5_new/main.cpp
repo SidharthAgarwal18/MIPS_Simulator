@@ -96,6 +96,8 @@ int main(int argc,char* argv[])
 
 	Node* head = new Node(-1);			//DLL to maintain wait buffer
 	Node* tail = new Node(-1);
+	head->saved_address = -1025;
+	tail->saved_address = -1025;
 	head -> next = tail;
 	head ->prev = nullptr;
 	tail -> prev = head;
@@ -293,10 +295,22 @@ int main(int argc,char* argv[])
 							if(type==9) 
 							{row_updates++;	temp->data_entered = R[I][((1<<5)-1) & (memory_instruction>>21)];}		
 
-							temp -> prev = tail -> prev;		//insertions in dequeue.
-							temp -> next = tail;
-							tail->prev->next = temp;
-							tail->prev = temp;
+							bool can = false;
+							auto where_to_ins = head;
+							int flag = 0;
+							while(where_to_ins != tail && flag==0)
+							{
+								if(where_to_ins -> saved_address /1024 == add / 1024) can = true;
+								else if(can == true) flag = 1;
+								where_to_ins = where_to_ins->next;
+							}
+							where_to_ins = where_to_ins->prev;
+							{
+								temp -> prev = where_to_ins;		//insertions in dequeue.
+								temp -> next = where_to_ins -> next;
+								temp->next->prev = temp;
+								where_to_ins->next = temp;
+							}
 
 							wait_buffer_size++;
 							cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": instruction saved in wait buffer"<<endl;
