@@ -14,6 +14,7 @@ struct Node
 	int saved_address;
 	int core;
 	int data_entered;
+	int node_priority;
 	Node* next;
 	Node* prev;
 	Node()
@@ -43,6 +44,28 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
     }
 }
 
+Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[])
+{
+	//return head->next;		//comment this to run after this
+
+
+	for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
+	{
+		if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
+	}
+	/*
+	for(int I =0;I<N;I++)
+	{
+		if(blocked[I] == true)
+		{
+			for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
+			{
+				if(same_row_ins-> core == I) return same_row_ins;
+			}
+		}
+	}*/
+	return head->next;
+}
 
 int main(int argc,char* argv[])
 {
@@ -76,7 +99,7 @@ int main(int argc,char* argv[])
 	string hash[32];
 
 	bool blocked[N] = {false};								//Is core 'I' blocked
-	int priority[N] = {-1};									//Hueristic for deciding which row to load.. Is proportional to cycles it will require to run based on current file data..
+	int priority[N];
 	for(int i=0;i<N;i++) priority[i] = -1;
 
 	for(int i=0;i<N;i++)
@@ -177,7 +200,7 @@ int main(int argc,char* argv[])
 
 			if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
-				Node* temp = head -> next;		//selection for next row instruction.
+				Node* temp = memory_manger(head,tail,N,buffer_row,blocked);
 				
 				int ins = temp-> data;
 				int core = temp->core;
