@@ -23,7 +23,7 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
     }
 }
 
-Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[4][3],pair<int,Node*> busy[16][])
+Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[4][3],pair<int,Node*> busy[][32])
 {
 	//return head->next;		//comment this to run after this
 
