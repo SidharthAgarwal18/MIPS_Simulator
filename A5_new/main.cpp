@@ -23,7 +23,7 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
     }
 }
 
-Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[4][3],pair<int,Node*> busy[][32])
+Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[][3],pair<int,Node*> busy[][32])
 {
 	//return head->next;		//comment this to run after this
 
@@ -31,6 +31,7 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 	{
 		if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
 	}
+	/*
 	for(int I =0;I<N;I++)
 	{
 		if(blocked[I] == true)
@@ -43,7 +44,7 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 			}
 		}
 	}
-	return head->next;
+	return head->next;*/
 
 	int core_select = -1;
 	int min_priority = INT_MAX;
