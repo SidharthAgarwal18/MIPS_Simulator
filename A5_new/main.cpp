@@ -23,7 +23,7 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
     }
 }
 
-Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[])
+Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[4][3],pair<int,Node*> busy[16][])
 {
 	//return head->next;		//comment this to run after this
 
@@ -42,6 +42,23 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[])
 				req_row_ins = req_row_ins->next;
 			}
 		}
+	}
+	return head->next;
+
+	int core_select = -1;
+	int min_priority = INT_MAX;
+	for(int I=0;I<N;I++)
+	{
+		if(blocked[I] == true && priority[I] >0)
+		{
+			if(priority[I] < min_priority) {min_priority = priority[I];core_select = I;}
+		}
+	}
+	if(core_select!=-1)
+	{
+		if(reg_used_when_blocked[core_select][0] != -1) return busy[core_select][reg_used_when_blocked[core_select][0]].second;
+		if(reg_used_when_blocked[core_select][1] != -1) return busy[core_select][reg_used_when_blocked[core_select][1]].second;
+		if(reg_used_when_blocked[core_select][2] != -1) return busy[core_select][reg_used_when_blocked[core_select][2]].second;
 	}
 	return head->next;
 }
@@ -77,6 +94,7 @@ int main(int argc,char* argv[])
 	int buffer[256];
 	string hash[32];
 
+	int reg_used_when_blocked[N][3];
 	bool blocked[N] = {false};								//Is core 'I' blocked
 	int priority[N];
 	for(int i=0;i<N;i++) priority[i] = -1;
@@ -179,7 +197,7 @@ int main(int argc,char* argv[])
 
 			if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
-				Node* temp = memory_manger(head,tail,N,buffer_row,blocked);
+				Node* temp = memory_manger(head,tail,N,buffer_row,blocked,priority,reg_used_when_blocked,busy);
 				
 				int ins = temp-> data;
 				int core = temp->core;
@@ -242,10 +260,10 @@ int main(int argc,char* argv[])
 				int type = ((1<<5)-1) & (memory_instruction>>26);
 				int prev_instruction = cur_instruction[I];
 
-				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority);
-				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority);
-				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,exit_instruction[I],cur_instruction[I],cycle,I,0,blocked,priority);
-				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority);
+				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
+				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
+				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,exit_instruction[I],cur_instruction[I],cycle,I,0,blocked,priority,reg_used_when_blocked[I]);
+				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
 				else if((type == 8 || type ==9) && wait_buffer_size<MAX_WAIT_BUFFER_SIZE) 
 				{
 					if(buffer_row == -1)
@@ -256,7 +274,7 @@ int main(int argc,char* argv[])
 						buffer_row = row;
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
-						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority);
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I]);
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						core_in_dram = I;
@@ -285,7 +303,7 @@ int main(int argc,char* argv[])
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority))
+						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I]))
 						{
 							blocked[I] = false;
 							//cout<<instruction<<endl;

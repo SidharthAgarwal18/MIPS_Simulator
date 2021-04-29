@@ -6,7 +6,7 @@
 using namespace std;
 #include "basic.hpp"
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
+int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
 {
 	int r3 = ((1<<5)-1) & (memory_instruction>>11);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -17,10 +17,13 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	if(busy[r3].first==1 || busy[r2].first==1 || busy[r1].first==1) 			//if either of them is busy dont move forward
 	{
 		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
 		set<int> temp;
-		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
-		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
-		if(busy[r3].first == 1) {int a = (busy[r3].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r3].first == 1) {int a = (busy[r3].second->saved_address/1024);reg_used_when_blocked[2] = r3;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
@@ -37,7 +40,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	return instruction+1;
 }
 
-int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
+int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
 {
 	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -49,9 +52,13 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	{
 		blocked[core] = true;
 		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
 		set<int> temp;
-		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
-		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+
 		return instruction;
 	}
 	else
@@ -65,7 +72,7 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	return instruction+1;
 }
 
-int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle,int core,int ref_ins,bool blocked[],int priority[])
+int decode_c(int memory_instruction,int end_of_instruction,int instruction,int cycle,int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
 {
 	int new_instruction = ((1<<26)-1) & (memory_instruction);
 	if(new_instruction>end_of_instruction) throw invalid_argument("Unexpected output in jump statement");
@@ -114,7 +121,7 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[],int reg_used_when_blocked[])
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -124,9 +131,12 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	{
 		blocked[core] = true;
 		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
 		set<int> temp;
-		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
-		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
@@ -155,7 +165,7 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	return instruction+1;
 }
 
-int decode_e(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[])
+int decode_e(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
 {
 	int next_instruction = ((1<<16)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -165,9 +175,12 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	{
 		blocked[core] = true;
 		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
 		set<int> temp;
-		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
-		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
 		return instruction;
 	}
 	else
