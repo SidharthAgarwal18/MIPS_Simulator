@@ -51,8 +51,8 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 5;
-		M = 1500;
+		N = 3;
+		M = 2500;
 	}
 	else
 	{
@@ -292,9 +292,9 @@ int main(int argc,char* argv[])
 					}
 				}
 				else if(wait_buffer_size==MAX_WAIT_BUFFER_SIZE)
-				{cout<<"core :"<<I<<" line number "<<cur_instruction[I]+1<<": cycle "<<cycle<<": wait buffer size full WAITING...."<<endl;}
+				{cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": wait buffer size full WAITING...."<<endl;}
 				else if(write_port[I]==cycle)
-				{cout<<"core :"<<I<<" line number "<<cur_instruction[I]+1<<": cycle "<<cycle<<": write port of this core busy WAITING...."<<endl;}
+				{cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": write port of this core busy WAITING...."<<endl;}
 				else throw invalid_argument("Unexpected memory instruction");
 
 				if(cur_instruction[I]==exit_instruction[I]) remaining_cores--;
