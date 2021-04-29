@@ -6,7 +6,7 @@
 using namespace std;
 #include "basic.hpp"
 
-int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
+int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
 {
 	int r3 = ((1<<5)-1) & (memory_instruction>>11);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -14,7 +14,20 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	//int op = ((1<<5)-1) & (memory_instruction>>26);
 	
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
-	if(busy[r3].first==1 || busy[r2].first==1 || busy[r1].first==1) 			//if either of them is busy dont move forward
+	
+	if(busy[r1].first==1 && busy[r2].first==0 && busy[r3].first==0)
+	{
+		busy[r1].first = 0;
+
+		Node* temp = busy[r1].second;
+
+		cout<<"core :"<<temp->core<<" line number "<<temp->line<<": Deleted from wait buffer"<<endl;
+
+		temp->prev->next = temp->next;
+		temp->next->prev = temp->prev;
+		*wait_buffer_size = (*wait_buffer_size) -1;
+	}
+	else if(busy[r3].first==1 || busy[r2].first==1) 			//if either of them is busy dont move forward
 	{
 		priority[core] = 0;
 		reg_used_when_blocked[0] = -1;
@@ -27,8 +40,9 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		return instruction;
 	}
 	else
-		blocked[core] = false;
-
+	blocked[core] = false;
+	
+	priority[core] = 100;
 	if(op==1) R[r1] = R[r2] + R[r3];
 	else if(op==2) R[r1] = R[r2] - R[r3];
 	else if(op==3) R[r1] = R[r2]*R[r3];
@@ -40,7 +54,7 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 	return instruction+1;
 }
 
-int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[])
+int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node*> busy[],int cycle,string hash[],int core,int ref_ins,bool blocked[],int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
 {
 	int address = ((1<<15)-1) & (memory_instruction);		//address is stored in 15 bits now.
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
@@ -48,7 +62,19 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 
 	if(r1==0) throw invalid_argument("An attempt to change the value stored in $zero ");
 	
-	if(busy[r2].first==1 || busy[r1].first==1 ) 							//if either of them is busy dont move forward
+	if(busy[r1].first==1 && busy[r2].first==0)
+	{
+		busy[r1].first = 0;
+
+		Node* temp = busy[r1].second;
+
+		cout<<"core :"<<temp->core<<" line number "<<temp->line<<": Deleted from wait buffer"<<endl;
+		
+		temp->prev->next = temp->next;
+		temp->next->prev = temp->prev;
+		*wait_buffer_size = (*wait_buffer_size) -1;
+	}
+	else if(busy[r2].first==1) 							//if either of them is busy dont move forward
 	{
 		blocked[core] = true;
 		priority[core] = 0;
@@ -62,8 +88,9 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		return instruction;
 	}
 	else
-		blocked[core] = false;
+	blocked[core] = false;
 
+	priority[core] = 100;
 	int sign = (memory_instruction & (1<<15));					//for dealing with negative sign
 	if(sign!=0) R[r1] = R[r2] - address;
 	else R[r1] = R[r2] + address;
@@ -121,13 +148,25 @@ void enter_data(int buffer[],int location,int remainder,int value)
 	return ;
 }
 
-int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[],int reg_used_when_blocked[])
+int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int end_of_instruction,pair<int,Node*> busy[],int R_used[],int buffer[],bool blocked[],int start_address,int priority[],int reg_used_when_blocked[],int* wait_buffer_size)
 {
 	int offset = ((1<<15)-1) & (memory_instruction);
 	int r2 = ((1<<5)-1) & (memory_instruction>>16);
 	int r1 = ((1<<5)-1) & (memory_instruction>>21);
 
-	if(busy[r2].first==1 || busy[r1].first==1) 
+	if(busy[r1].first==1 && busy[r2].first==0)
+	{
+		busy[r1].first = 0;
+
+		Node* temp = busy[r1].second;
+
+		cout<<"core :"<<temp->core<<" line number "<<temp->line<<": Deleted from wait buffer"<<endl;
+		
+		temp->prev->next = temp->next;
+		temp->next->prev = temp->prev;
+		*wait_buffer_size = (*wait_buffer_size) -1;
+	}
+	else if(busy[r2].first==1) 
 	{
 		blocked[core] = true;
 		priority[core] = 0;
@@ -141,7 +180,8 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 	}
 	else
 	blocked[core] = false;
-
+	
+	priority[core] = 100;
 	//busy[r2] = 1;												//design  decision.
 	if(op==8){busy[r1].first = 1;}						//only r1 is locked for lw and permanently 
 
@@ -184,8 +224,9 @@ int decode_e(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		return instruction;
 	}
 	else
-		blocked[core] = false;
-
+	blocked[core] = false;
+	
+	priority[core] = 100;
 	if(op==6 && R[r1]==R[r2]) 
 	{
 		cout<<"core :"<<core<<" line number "<<instruction - ref_ins<<": cycle "<<cycle<<": "<<"jumped to line number "<<next_instruction - ref_ins<<endl;

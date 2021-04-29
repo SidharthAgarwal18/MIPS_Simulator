@@ -11,6 +11,7 @@ struct Node
 	int data;
 	int saved_address;
 	int core;
+	int line;
 	int data_entered;
 	int node_priority;
 	Node* next;

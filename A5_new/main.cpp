@@ -23,28 +23,16 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
     }
 }
 
-Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[][3],pair<int,Node*> busy[][32])
+Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[][3],pair<int,Node*> busy[][32],bool this_core_finished)
 {
 	//return head->next;		//comment this to run after this
-
-	for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
+	if(!this_core_finished)
 	{
-		if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
-	}
-	/*
-	for(int I =0;I<N;I++)
-	{
-		if(blocked[I] == true)
+		for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
 		{
-			auto req_row_ins = head;
-			while(req_row_ins != tail)
-			{
-				if(req_row_ins -> saved_address /1024 == buffer_row) return req_row_ins;
-				req_row_ins = req_row_ins->next;
-			}
+			if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
 		}
 	}
-	return head->next;*/
 
 	int core_select = -1;
 	int min_priority = INT_MAX;
@@ -55,11 +43,18 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 			if(priority[I] < min_priority) {min_priority = priority[I];core_select = I;}
 		}
 	}
-	if(core_select!=-1)
+	if(core_select!=-1 && min_priority<=3)
 	{
 		if(reg_used_when_blocked[core_select][0] != -1) return busy[core_select][reg_used_when_blocked[core_select][0]].second;
 		if(reg_used_when_blocked[core_select][1] != -1) return busy[core_select][reg_used_when_blocked[core_select][1]].second;
 		if(reg_used_when_blocked[core_select][2] != -1) return busy[core_select][reg_used_when_blocked[core_select][2]].second;
+	}
+	else if(this_core_finished)
+	{
+		for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
+		{
+			if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
+		}
 	}
 	return head->next;
 }
@@ -72,7 +67,7 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 3;
+		N = 8;
 		M = 1500;
 	}
 	else
@@ -95,6 +90,7 @@ int main(int argc,char* argv[])
 	int buffer[256];
 	string hash[32];
 
+	Node* best;
 	int reg_used_when_blocked[N][3];
 	bool blocked[N] = {false};								//Is core 'I' blocked
 	int priority[N];
@@ -198,7 +194,14 @@ int main(int argc,char* argv[])
 
 			if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
-				Node* temp = memory_manger(head,tail,N,buffer_row,blocked,priority,reg_used_when_blocked,busy);
+				Node* temp;
+
+				bool this_core_finished = false;
+				if(exit_instruction[core_in_dram]==cur_instruction[core_in_dram]) 
+				{this_core_finished = true;}
+
+				if(best->data!=-1) temp = best;
+				else temp = memory_manger(head,tail,N,buffer_row,blocked,priority,reg_used_when_blocked,busy,this_core_finished);
 				
 				int ins = temp-> data;
 				int core = temp->core;
@@ -252,6 +255,9 @@ int main(int argc,char* argv[])
 				if((((1<<5)-1) & (memory_instruction>>26))==9) num_sw++;
 			}
 		}
+
+		best = new Node(-1);
+
 		for(int I=0;I<N;I++)		//processing each core
 		{
 			if(cur_instruction[I] >= main_instruction[I] && cur_instruction[I] < exit_instruction[I])	//program has not yet finished
@@ -261,8 +267,8 @@ int main(int argc,char* argv[])
 				int type = ((1<<5)-1) & (memory_instruction>>26);
 				int prev_instruction = cur_instruction[I];
 
-				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
-				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
+				if((type==1 || type==2 || type==3 || type==4) && write_port[I]!=cycle) cur_instruction[I] = decode_a(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size);
+				else if(type==10 && write_port[I]!=cycle) cur_instruction[I] = decode_b(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I],&wait_buffer_size);
 				else if(type==7) cur_instruction[I] = decode_c(memory_instruction,exit_instruction[I],cur_instruction[I],cycle,I,0,blocked,priority,reg_used_when_blocked[I]);
 				else if(type==5 || type==6) cur_instruction[I] = decode_e(memory_instruction,R[I],cur_instruction[I],type,busy[I],cycle,hash,I,0,blocked,priority,reg_used_when_blocked[I]);
 				else if((type == 8 || type ==9) && wait_buffer_size<MAX_WAIT_BUFFER_SIZE) 
@@ -275,7 +281,7 @@ int main(int argc,char* argv[])
 						buffer_row = row;
 
 						req_cycle = cycle + row_delay +col_delay+1;		//req_cycle is where ins is completed.
-						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I]);
+						decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size);
 						
 						prev_dram_ins = cur_instruction[I];				//needed for freeing the correct instruction regs. later.
 						core_in_dram = I;
@@ -304,7 +310,7 @@ int main(int argc,char* argv[])
 					else
 					{
 						// if below is check for wheather instrucion is runnable.
-						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I]))
+						if(cur_instruction[I] != decode_d(memory_instruction,R[I],cur_instruction[I],type,I,exit_instruction[I],busy[I],R_used[I],buffer,blocked,((1024/N)*I*1024),priority,reg_used_when_blocked[I],&wait_buffer_size))
 						{
 							blocked[I] = false;
 							//cout<<instruction<<endl;
@@ -312,6 +318,7 @@ int main(int argc,char* argv[])
 							Node* temp = new Node(cur_instruction[I]);
 							temp->saved_address = add;			//save address here becasue might change due to change in Reg.value
 							temp->core = I;
+							temp->line = cur_instruction[I];
 
 							if(type==9) 
 							{row_updates++;	temp->data_entered = R[I][((1<<5)-1) & (memory_instruction>>21)];}		
@@ -338,7 +345,28 @@ int main(int argc,char* argv[])
 							cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": instruction saved in wait buffer"<<endl;
 							cur_instruction[I]++;
 						}
-						else blocked[I] = true;
+						else 
+						{
+							blocked[I] = true;
+							
+							bool local_test = true;
+							if(best->data!=-1)
+							{
+								local_test = local_test && ((reg_used_when_blocked[I][0]==-1) || (reg_used_when_blocked[I][0]!=-1 && (busy[I][reg_used_when_blocked[I][0]].second->saved_address)/1024==buffer_row));
+								local_test = local_test && ((reg_used_when_blocked[I][1]==-1) || (reg_used_when_blocked[I][1]!=-1 && (busy[I][reg_used_when_blocked[I][1]].second->saved_address)/1024==buffer_row));
+								local_test = local_test && ((reg_used_when_blocked[I][2]==-1) || (reg_used_when_blocked[I][2]!=-1 && (busy[I][reg_used_when_blocked[I][2]].second->saved_address)/1024==buffer_row));
+
+								if(local_test)
+								{
+									if(reg_used_when_blocked[I][0]!=-1)
+									{best = busy[I][reg_used_when_blocked[I][0]].second;}
+									else if(reg_used_when_blocked[I][1]!=-1)
+									{best = busy[I][reg_used_when_blocked[I][1]].second;}
+									else {best = busy[I][reg_used_when_blocked[I][2]].second;}
+								}
+							}
+							
+						}
 					}
 				}
 				else if(wait_buffer_size==MAX_WAIT_BUFFER_SIZE)
@@ -347,7 +375,7 @@ int main(int argc,char* argv[])
 				{cout<<"core :"<<I<<" line number "<<cur_instruction[I]<<": cycle "<<cycle<<": write port of this core busy WAITING...."<<endl;}
 				else throw invalid_argument("Unexpected memory instruction");
 
-				if(cur_instruction[I]==exit_instruction[I]) remaining_cores--;
+				if(cur_instruction[I]==exit_instruction[I]) {remaining_cores--;priority[I]=1000;}
 				//cout<<req_cycle<<" "<<cycle<<endl;
 			}
 		}
@@ -365,7 +393,7 @@ int main(int argc,char* argv[])
 
 			if(head->next->data != -1)		//common queue is not empty and buffer_row has no ins.
 			{
-				Node* temp = head -> next;		//selection for next row instruction.
+				Node* temp = memory_manger(head,tail,N,buffer_row,blocked,priority,reg_used_when_blocked,busy,false);
 				
 				int ins = temp-> data;
 				int core = temp->core;
