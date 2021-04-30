@@ -33,7 +33,21 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 			if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
 		}
 	}
-
+	/*
+	for(int I =0;I<N;I++)
+	{
+		if(blocked[I] == true)
+		{
+			auto req_row_ins = head;
+			while(req_row_ins != tail)
+			{
+				if(req_row_ins -> saved_address /1024 == buffer_row) return req_row_ins;
+				req_row_ins = req_row_ins->next;
+			}
+		}
+	}
+	return head->next;*/
+	
 	int core_select = -1;
 	int min_priority = INT_MAX;
 	for(int I=0;I<N;I++)
