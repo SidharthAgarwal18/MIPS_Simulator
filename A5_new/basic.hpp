@@ -13,7 +13,7 @@ struct Node
 	int core;
 	int line;
 	int data_entered;
-	int node_priority;
+	int type; // 8 for lw and 9 for sw
 	Node* next;
 	Node* prev;
 	Node()

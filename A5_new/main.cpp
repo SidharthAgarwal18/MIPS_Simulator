@@ -26,12 +26,10 @@ void print_map(std::unordered_map<int,int> const &m)//Added this functon only fo
 Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],int priority[],int reg_used_when_blocked[][3],pair<int,Node*> busy[][32],bool this_core_finished)
 {
 	//return head->next;		//comment this to run after this
-	if(!this_core_finished)
+
+	for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
 	{
-		for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
-		{
-			if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
-		}
+		if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
 	}
 	/*
 	for(int I =0;I<N;I++)
@@ -47,7 +45,7 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 		}
 	}
 	return head->next;*/
-	
+
 	int core_select = -1;
 	int min_priority = INT_MAX;
 	for(int I=0;I<N;I++)
@@ -62,13 +60,6 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 		if(reg_used_when_blocked[core_select][0] != -1) return busy[core_select][reg_used_when_blocked[core_select][0]].second;
 		if(reg_used_when_blocked[core_select][1] != -1) return busy[core_select][reg_used_when_blocked[core_select][1]].second;
 		if(reg_used_when_blocked[core_select][2] != -1) return busy[core_select][reg_used_when_blocked[core_select][2]].second;
-	}
-	else if(this_core_finished)
-	{
-		for(auto same_row_ins = head;same_row_ins!=tail;same_row_ins = same_row_ins -> next)
-		{
-			if(same_row_ins-> saved_address/1024 == buffer_row) return same_row_ins;
-		}
 	}
 	return head->next;
 }
@@ -133,6 +124,8 @@ int main(int argc,char* argv[])
 	head ->prev = nullptr;
 	tail -> prev = head;
 	tail -> next = nullptr;
+	Node* last = new Node(-1);
+	last -> saved_address = -1025;
 
 	hash[0] = "$zero"; hash[1] = "$at"; hash[2] = "$v0"; hash[3] = "$v1";hash[4] = "$a0";hash[5] = "$a1";hash[6] = "$a2";hash[7] = "$a3";
 	hash[8] = "$t0";hash[9] = "$t1";hash[10] = "$t2";hash[11] = "$t3";hash[12] = "$t4";hash[13] = "$t5";hash[14] = "$t6";hash[15] = "$t7";
@@ -216,7 +209,7 @@ int main(int argc,char* argv[])
 
 				if(best->data!=-1) temp = best;
 				else temp = memory_manger(head,tail,N,buffer_row,blocked,priority,reg_used_when_blocked,busy,this_core_finished);
-				
+
 				int ins = temp-> data;
 				int core = temp->core;
 
@@ -226,13 +219,15 @@ int main(int argc,char* argv[])
 				int add = temp->saved_address;
 				int enter_data = temp->data_entered;
 
-				temp->prev->next = temp->next;
-				temp->next->prev = temp->prev;
-				wait_buffer_size--;
-
 				int memory_instruction = memory[ins/256 + core*(1024/N)][ins%256];
 						
-				if(add/1024 == buffer_row)
+				if(add == last->saved_address &&  (memory_instruction>>26 & ((1<<5)-1)) == 8)
+				{
+					req_cycle = cycle + 1;
+					cout << "Forwarding ...";
+				}
+
+				else if(add/1024 == buffer_row)
 				{
 					req_cycle = cycle + col_delay;
 				}		
@@ -247,6 +242,11 @@ int main(int argc,char* argv[])
 
 				buffer_row = add/1024;
 				copy_row(memory,buffer,buffer_row);
+				last = temp;
+
+				temp->prev->next = temp->next;
+				temp->next->prev = temp->prev;
+				wait_buffer_size--;
 
 				if(req_cycle>M)
 				{
@@ -333,7 +333,7 @@ int main(int argc,char* argv[])
 							temp->saved_address = add;			//save address here becasue might change due to change in Reg.value
 							temp->core = I;
 							temp->line = cur_instruction[I];
-
+							temp -> type = type;
 							if(type==9) 
 							{row_updates++;	temp->data_entered = R[I][((1<<5)-1) & (memory_instruction>>21)];}		
 
