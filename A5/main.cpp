@@ -73,7 +73,7 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 8;
+		N = 10;
 		M = 1500;
 	}
 	else

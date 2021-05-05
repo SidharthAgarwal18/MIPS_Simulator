@@ -28,6 +28,37 @@ int decode_a(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		*wait_buffer_size = (*wait_buffer_size) -1;
 		busy[r1].second = nullptr;
 	}
+	else if(busy[r1].first==1 && (busy[r2].first==1 || busy[r3].first==1) && (r1!=r2) && (r1!=r3) && (busy[r1].second->data!=prev_dram_ins))
+	{
+		busy[r1].first = 0;
+
+		Node* temp1 = busy[r1].second;
+
+		cout<<"core :"<<temp1->core<<" line number "<<temp1->line<<": Deleted from wait buffer"<<endl;
+
+		temp1->prev->next = temp1->next;
+		temp1->next->prev = temp1->prev;
+
+		*wait_buffer_size = (*wait_buffer_size) -1;
+		busy[r1].second = nullptr;
+
+		blocked[core] = true;
+
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r3].first == 1) {int a = (busy[r3].second->saved_address/1024);reg_used_when_blocked[2] = r3;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+
+		if(behind_cycle[core]==0)
+		{
+			behind_cycle[core] = 1;
+			priority[core] = 100;
+		}
+		return instruction;
+	}
 	else if(busy[r1].first==1 || busy[r3].first==1 || busy[r2].first==1) 			//if either of them is busy dont move forward
 	{
 		blocked[core] = true;
@@ -85,6 +116,35 @@ int decode_b(int memory_instruction,int R[],int instruction,int op,pair<int,Node
 		temp->next->prev = temp->prev;
 		*wait_buffer_size = (*wait_buffer_size) -1;
 		busy[r1].second = nullptr;
+	}
+	else if(busy[r1].first==1 && busy[r2].first==1 && (r1!=r2) && (busy[r1].second->data!=prev_dram_ins))
+	{
+		busy[r1].first = 0;
+
+		Node* temp1 = busy[r1].second;
+
+		cout<<"core :"<<temp1->core<<" line number "<<temp1->line<<": Deleted from wait buffer"<<endl;
+		
+		temp1->prev->next = temp1->next;
+		temp1->next->prev = temp1->prev;
+		*wait_buffer_size = (*wait_buffer_size) -1;
+		busy[r1].second = nullptr;	
+
+		blocked[core] = true;
+		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+
+		if(behind_cycle[core]==0)
+		{
+			behind_cycle[core] = 1;
+			priority[core] = 100;
+		}
+		return instruction;
 	}
 	else if(busy[r1].first ==1 ||busy[r2].first==1) 							//if either of them is busy dont move forward
 	{
@@ -185,6 +245,35 @@ int decode_d(int memory_instruction,int R[],int instruction,int op,int core,int 
 		temp->next->prev = temp->prev;
 		*wait_buffer_size = (*wait_buffer_size) -1;
 		busy[r1].second = nullptr;
+	}
+	else if(busy[r1].first==1 && busy[r2].first==1 && (r1!=r2) && (busy[r1].second->data!=prev_dram_ins))
+	{
+		busy[r1].first = 0;
+
+		Node* temp1 = busy[r1].second;
+
+		cout<<"core :"<<temp1->core<<" line number "<<temp1->line<<": Deleted from wait buffer"<<endl;
+		
+		temp1->prev->next = temp1->next;
+		temp1->next->prev = temp1->prev;
+		*wait_buffer_size = (*wait_buffer_size) -1;
+		busy[r1].second = nullptr;
+		
+		blocked[core] = true;
+		priority[core] = 0;
+		reg_used_when_blocked[0] = -1;
+		reg_used_when_blocked[1] = -1;
+		reg_used_when_blocked[2] = -1;
+		set<int> temp;
+		if(busy[r1].first == 1) {int a = (busy[r1].second->saved_address/1024);reg_used_when_blocked[0] = r1;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		if(busy[r2].first == 1) {int a = (busy[r2].second->saved_address/1024);reg_used_when_blocked[1] = r2;if(temp.count(a) == 0) {priority[core]++;temp.insert(a);}}
+		
+		if(behind_cycle[core]==0)
+		{
+			behind_cycle[core] = 1;
+			priority[core] = 100;
+		}
+		return instruction;
 	}
 	else if(busy[r1].first==1 || busy[r2].first==1) 
 	{
