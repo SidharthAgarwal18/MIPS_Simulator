@@ -1,0 +1,21 @@
+1) implemented forwarding
+2) deleted redundant lw instructions in wait buffer that have not entered dram.
+	ex : lw t0,..
+	     add t0,r1,r2 where r1!=t0 and r2!=t0   we can delete first lw...
+3) reordering for same row only required when there is a pending lw/sw instruction of same row blocking a core : didnot yield any reduction in cycle...
+4) wait buffer size finite.
+5) memory manager cycle required 1. As all the cores calculate their own priority.
+6) memory manager uses priorities from previous cycle.
+7) memory manager just finds the core with min priority and chooses the next best row.
+8) heuristics for priority, give preference to blocked core with minimum number of blocking lw/sw row instructions.
+9) each core executes using non-blocking optimization parallely to memory manager which lags by one cycle.
+10) main idea is to prevent any core from completely stopping its execution.
+11) priorty can be 1,2,100 becuase of redundant instructions.
+12) can store a block of size number of cores, having valid bit 1 if priority is 1 or 0, similarly separate block with valid bit as 1 if priority is 2 else 0
+13) use two 8 bit priority encoder for both 1 and 2 priorities parallely and give 1 more priority than 2 to fetch final core value.
+14) a 4 port mutiplexer has almost same delay as 4 port priority encoder           			{needs confirmation}
+15) a normal 'add' instruction circuit has at least 4-2 port multiplexer in its datapath, alongwith ALU operation, which we assumed to have taken a single cycle.
+
+16) if wait buffer is full instruciton reading stops.
+17) single write port
+
