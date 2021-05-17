@@ -1,0 +1,22 @@
+core :0 line number 0: cycle 1: $s0 = 1000
+core :1 line number 0: cycle 1: $s0 = 1000
+core :2 line number 0: cycle 1: $t1 = 5024
+core :3 line number 0: cycle 1: $t0 = 450
+core :0 line number 1: cycle 2: $s1 = 2500
+core :1 line number 1: cycle 2: $s1 = 2500
+core :2 line number 1: cycle 2: $t2 = 6024
+core :3 line number 1: cycle 2: $t1 = 36
+core :0 line number 2: cycle 3: $s2 = 5000
+core :1 line number 2: cycle 3: $s1 = 0
+core :2 line number 2: cycle 3:  instruction saved in wait buffer
+core :2 line number 2: cycle 4 - 15: $t1 = 0
+core :3 line number 2: cycle 3: $t2 = 486
+core :0 line number 3: cycle 4: $s3 = 6500
+core :1 line number 3: cycle 4: instruction saved in wait buffer
+core :2 line number 3: cycle 4: instruction saved in wait buffer
+core :3 line number 3: cycle 4: $t3 = 16200
+core :0 line number 4: cycle 5: $t0 = 1
+core :1 line number 4: cycle 5: $s0 = 1004
+core :2 line number 4: cycle 5: instruction saved in wait buffer
+core :3 line number 4: cycle 5: $s0 = 1000
+core :0 line number 5: cycle 6: $t1 = 2

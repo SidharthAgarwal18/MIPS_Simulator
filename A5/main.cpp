@@ -73,8 +73,8 @@ int main(int argc,char* argv[])
 	{
 		row_delay = 10;
 		col_delay = 2;		
-		N = 14;
-		M = 1500;
+		N = 4;
+		M = 500;
 	}
 	else
 	{
@@ -83,7 +83,7 @@ int main(int argc,char* argv[])
 		row_delay = atoi(argv[3]);
 		col_delay = atoi(argv[4]);
 	}
-	string output_file_name = "out.txt";
+	//string output_file_name = "out.txt";
 	int memory[1024][256] = {0};
 
 	int core_in_dram = -1;
@@ -147,14 +147,14 @@ int main(int argc,char* argv[])
 	int pending_finish = -1;
 	int pending_core = -1;
 
-	freopen("out.txt","w",stdout);
+	freopen("./testcases/T4/out.txt","w",stdout);
 
 	int max_num_ins = INT_MIN;
 
 	for(int I=0;I<N;I++)				//for file reading
 	{
 		unordered_map<string,int> label;
-		string input_file_name = "t" + to_string(I+1) + ".txt";
+		string input_file_name = "./testcases/T4/t" + to_string(I+1) + ".txt";
 		ifstream cinstrm(input_file_name);				//reads all the labels
 
 		while(getline(cinstrm,instruction_string))
