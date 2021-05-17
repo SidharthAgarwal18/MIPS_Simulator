@@ -1,0 +1,5 @@
+Forwarding count : 4
+Deleted from wait buffers : 18
+
+
+And 

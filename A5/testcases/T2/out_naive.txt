@@ -1,0 +1,129 @@
+core :0 line number 0: cycle 1: $t0 = 1024
+core :1 line number 0: cycle 1: $t0 = 960
+core :2 line number 0: cycle 1: $s0 = 0
+core :3 line number 0: cycle 1: $s0 = 0
+core :0 line number 1: cycle 2: $t1 = 2024
+core :1 line number 1: cycle 2: $t1 = 100
+core :2 line number 1: cycle 2:  instruction saved in wait buffer
+core :2 line number 1: cycle 3 - 14: $t0 = 0
+core :3 line number 1: cycle 2: instruction saved in wait buffer
+core :0 line number 2: cycle 3: $t2 = 3024
+core :1 line number 2: cycle 3: instruction saved in wait buffer
+core :2 line number 2: cycle 3: $s1 = 2
+core :3 line number 2: cycle 3: $s1 = 0
+core :0 line number 3: cycle 4: $t3 = 4024
+core :1 line number 3: cycle 4: instruction saved in wait buffer
+core :2 line number 3: cycle 4: $t1 = 100
+core :3 line number 3: cycle 4: instruction saved in wait buffer
+core :0 line number 4: cycle 5: $t4 = 5024
+core :1 line number 4: cycle 5: instruction saved in wait buffer
+core :2 line number 4: cycle 5: instruction saved in wait buffer
+core :3 line number 4: cycle 5: $s0 = 4
+core :0 line number 5: cycle 6: $t5 = 6024
+core :1 line number 5: cycle 6: instruction saved in wait buffer
+core :2 line number 5: cycle 6: $t1 = 200
+core :0 line number 6: cycle 7: instruction saved in wait buffer
+core :1 line number 6: cycle 7: instruction saved in wait buffer
+core :2 line number 6: cycle 7: $s0 = 4
+core :0 line number 7: cycle 8: instruction saved in wait buffer
+core :1 line number 6: Deleted from wait buffer
+core :1 line number 7: cycle 8: instruction saved in wait buffer
+core :2 line number 7: cycle 8: instruction saved in wait buffer
+core :0 line number 8: cycle 9: instruction saved in wait buffer
+core :2 line number 8: cycle 9: $s1 = 6
+core :0 line number 9: cycle 10: instruction saved in wait buffer
+core :2 line number 9: cycle 10: instruction saved in wait buffer
+core :0 line number 10: cycle 11: instruction saved in wait buffer
+core :2 line number 10: cycle 11: $s0 = 4
+core :0 line number 11: cycle 12: instruction saved in wait buffer
+core :2 line number 11: cycle 12: instruction saved in wait buffer
+core :0 line number 10: Deleted from wait buffer
+core :2 line number 12: cycle 13: $s1 = 10
+core :2 line number 13: cycle 14: instruction saved in wait buffer
+core :3 line number 1: cycle 15 - 26: memory address 790432-790435 = 0
+core :2 line number 14: cycle 15: $s0 = 16
+core :2 line number 15: cycle 16: $t8 = 16
+core :2 line number 16: cycle 17: instruction saved in wait buffer
+core :2 line number 17: cycle 18: $s1 = 10
+core :2 line number 18: cycle 19: instruction saved in wait buffer
+core :3 line number 5: cycle 26: write port of this core busy WAITING....
+core :1 line number 2: cycle 27 - 48: memory address 266244-266247 = 960
+core :1 line number 3: cycle 49 - 70: memory address 270344-270347 = 960
+core :1 line number 7: cycle 71 - 92: memory address 266340-266343 = 0
+core :1 line number 5: cycle 93 - 94: $t3 = 0
+core :1 line number 4: cycle 95 - 96: $t2 = 0
+core :3 line number 3: cycle 97 - 118: $t1 = 0
+core :3 line number 5: cycle 118: write port of this core busy WAITING....
+core :2 line number 4: cycle 119 - 130: memory address 536290-536293 = 100
+core :3 line number 5: cycle 119: $t2 = -10
+core :3 line number 6: cycle 120: instruction saved in wait buffer
+core :3 line number 7: cycle 121: $s1 = 4
+core :3 line number 8: cycle 122: instruction saved in wait buffer
+core :3 line number 9: cycle 123: $s0 = 4
+core :3 line number 10: cycle 124: instruction saved in wait buffer
+core :3 line number 11: cycle 125: $s1 = 8
+core :3 line number 12: cycle 126: instruction saved in wait buffer
+core :3 line number 13: cycle 127: $s0 = 1
+core :3 line number 14: cycle 128: $t0 = 1
+core :3 line number 15: cycle 129: instruction saved in wait buffer
+core :3 line number 16: cycle 130: $s1 = 8
+core :0 line number 6: cycle 131 - 152: $t0 = 0
+core :3 line number 17: cycle 131: instruction saved in wait buffer
+core :2 line number 18: cycle 153 - 164: $t7 = 0
+core :2 line number 13: cycle 165 - 166: memory address 536298-536301 = 0
+core :2 line number 9: cycle 167 - 168: memory address 536294-536297 = 0
+core :2 line number 7: cycle 169 - 170: $t2 = 100
+core :0 line number 7: cycle 171 - 192: $t1 = 0
+core :0 line number 8: cycle 193 - 204: $t2 = 0
+core :0 line number 12: cycle 193: instruction saved in wait buffer
+core :0 line number 9: cycle 205 - 216: $t3 = 0
+core :0 line number 13: cycle 205: instruction saved in wait buffer
+core :0 line number 11: cycle 217 - 228: $t5 = 0
+core :0 line number 14: cycle 217: instruction saved in wait buffer
+core :2 line number 11: cycle 229 - 240: $t4 = 0
+core :2 line number 16: cycle 241 - 242: memory address 528304-528307 = 0
+core :3 line number 6: cycle 243 - 264: memory address 790436-790439 = -10
+core :3 line number 8: cycle 265 - 286: $t3 = 0
+core :3 line number 15: cycle 287 - 298: $t6 = 255
+core :3 line number 17: cycle 299 - 310: $t7 = 0
+core :3 line number 10: cycle 311 - 322: memory address 790468-790471 = 0
+core :3 line number 12: cycle 323 - 344: $t5 = 0
+core :0 line number 12: cycle 345 - 356: $t4 = 0
+Forwarding ...core :0 line number 13: cycle 357 - 357: $t0 = 0
+core :0 line number 15: cycle 357: instruction saved in wait buffer
+Forwarding ...core :0 line number 14: cycle 358 - 358: $t3 = 0
+core :0 line number 16: cycle 358: instruction saved in wait buffer
+Forwarding ...core :0 line number 15: cycle 359 - 359: $t2 = 0
+core :0 line number 17: cycle 359: instruction saved in wait buffer
+Forwarding ...core :0 line number 16: cycle 360 - 360: $t1 = 0
+Forwarding ...core :0 line number 17: cycle 361 - 361: $t0 = 0
+core :0 line number 18: cycle 361: instruction saved in wait buffer
+Forwarding ...core :0 line number 18: cycle 362 - 362: $t3 = 0
+core :0 line number 19: cycle 362: instruction saved in wait buffer
+Forwarding ...core :0 line number 19: cycle 363 - 363: $t4 = 0
+core :0 line number 20: cycle 363: instruction saved in wait buffer
+Forwarding ...core :0 line number 20: cycle 364 - 364: $t2 = 0
+core :0 line number 21: cycle 364: instruction saved in wait buffer
+Forwarding ...core :0 line number 21: cycle 365 - 365: $t3 = 0
+core :0 line number 22: cycle 365: instruction saved in wait buffer
+Forwarding ...core :0 line number 22: cycle 366 - 366: $t5 = 0
+core :0 line number 23: cycle 366: instruction saved in wait buffer
+Forwarding ...core :0 line number 23: cycle 367 - 367: $t0 = 0
+core :0 line number 24: cycle 367: write port of this core busy WAITING....
+core :0 line number 24: cycle 368: $t0 = 12
+core :0 line number 25: cycle 369: $t1 = 24
+core :0 line number 26: cycle 370: $t2 = 16
+core :0 line number 27: cycle 371: $t3 = 20
+core :0 line number 28: cycle 372: $t4 = 124
+core :0 line number 29: cycle 373: $t5 = 120
+
+The instructions remaining in dram which have not been executed are 
+NONE
+
+Core : 0 completed successfully
+Core : 1 completed successfully
+Core : 2 completed successfully
+Core : 3 completed successfully
+
+Total number of cycles : 374
+Total number of row buffer updates : 19

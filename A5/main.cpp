@@ -46,7 +46,7 @@ Node* memory_manger(Node* head,Node* tail,int N,int buffer_row,bool blocked[],in
 		}
 	}
 	return head->next;*/
-
+	
 	int core_select = -1;
 	int min_priority = INT_MAX;
 	for(int I=0;I<N;I++)
@@ -147,14 +147,14 @@ int main(int argc,char* argv[])
 	int pending_finish = -1;
 	int pending_core = -1;
 
-	freopen("./testcases/T4/out.txt","w",stdout);
+	freopen("./testcases/T1/out_naive.txt","w",stdout);
 
 	int max_num_ins = INT_MIN;
 
 	for(int I=0;I<N;I++)				//for file reading
 	{
 		unordered_map<string,int> label;
-		string input_file_name = "./testcases/T4/t" + to_string(I+1) + ".txt";
+		string input_file_name = "./testcases/T1/t" + to_string(I+1) + ".txt";
 		ifstream cinstrm(input_file_name);				//reads all the labels
 
 		while(getline(cinstrm,instruction_string))
@@ -197,6 +197,7 @@ int main(int argc,char* argv[])
 
 	while(cycle <= M && remaining_cores>0)
 	{
+		//cerr << endl;
 		//cerr << cycle <<" "<< blocked[0] <<endl;
 		if(req_cycle == cycle && buffer_row!=-1)
 		{
@@ -293,6 +294,7 @@ int main(int argc,char* argv[])
 				{
 					if(buffer_row == -1)
 					{
+						Node* first_mem_access = new Node();
 						int add = address_of_instruction(memory_instruction,R[I],exit_instruction[I],((1024/N)*I*1024));
 						int row = add/1024;
 						copy_row(memory,buffer,row);		
@@ -324,6 +326,11 @@ int main(int argc,char* argv[])
 							pending_core = I;
 						}
 						cur_instruction[I]++;							//instruction will always run because first and dram is empty
+						first_mem_access -> saved_address = add;
+						int r1 = ((1<<5)-1) & (memory_instruction>>21);
+						//cerr << "A";
+						busy[I][r1].second = first_mem_access;
+						//cerr << "A";
 					}
 					else
 					{
