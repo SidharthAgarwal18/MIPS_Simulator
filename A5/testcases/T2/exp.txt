@@ -1,0 +1,3 @@
+Forwarding count : 11
+Deleted from wait buffers : 3
+Increase over Naive implementation : Naive took 374 cycles while our implementaion took 256..(YAY)..

@@ -147,14 +147,14 @@ int main(int argc,char* argv[])
 	int pending_finish = -1;
 	int pending_core = -1;
 
-	freopen("./testcases/T1/out_naive.txt","w",stdout);
+	freopen("./testcases/T4/out.txt","w",stdout);
 
 	int max_num_ins = INT_MIN;
 
 	for(int I=0;I<N;I++)				//for file reading
 	{
 		unordered_map<string,int> label;
-		string input_file_name = "./testcases/T1/t" + to_string(I+1) + ".txt";
+		string input_file_name = "./testcases/T4/t" + to_string(I+1) + ".txt";
 		ifstream cinstrm(input_file_name);				//reads all the labels
 
 		while(getline(cinstrm,instruction_string))
