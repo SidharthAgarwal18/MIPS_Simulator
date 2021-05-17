@@ -1,0 +1,15 @@
+main:
+addi $t0, $t0, 960
+addi $t1, $t1, 100
+sw $t0, 1000($zero)
+addi $t1, $t1, 960
+addi $t2, $t2, 960
+addi $t3, $t3, 960
+addi $t4, $t4, 960
+addi $t5, $t5, 960
+addi $t6, $t6, 960
+addi $t7, $t7, 960
+addi $t0, $t0, 900
+addi $t9, $t9, 960
+addi $t8, $t8, 960
+exit:

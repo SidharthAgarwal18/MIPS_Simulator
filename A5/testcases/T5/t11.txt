@@ -1,0 +1,12 @@
+main:
+	addi $t1,$zero,5024
+	addi $t2,$zero,6024
+	lw $t1,1000($t1)
+	sw $t0,2000($t2)
+	lw $t3,1000($t4)
+	lw $t4,2000($t1)
+	add $t2,$t2,$t3
+	add $t1,$t2,$zero
+	addi $t3, $t2,100
+	addi $t4,$t4,66	 
+exit:

@@ -1,0 +1,37 @@
+main:
+	addi $s0, $zero, 1000
+	addi $s1, $zero, 2500
+	addi $s1, $zero, 0
+	lw $t1, 3000($s1)
+	addi $s0, $s0, 4
+	addi $t2,$t1,-10
+	addi $t0, $zero, 1
+	addi $t1, $zero, 2
+	lw $t0, 100($s0)
+	addi $s0, $s0, 4
+	lw $t1, 900($s0)
+	add $t2, $t0, $t1
+	add $s1, $s1, $zero
+	mul $s3, $s3, $s4
+	addi $t1, $zero, 2
+	addi $t2, $zero, 3
+	addi $t3, $zero, 4
+	sw $t0, 3000($s0)
+	sw $t1, 3000($s1)
+	addi $t4,$zero,5024
+	addi $t5,$zero,6024
+	lw $t0,1000($t1)
+	sw $t0,1000($t2)
+	addi $s1, $s1, 4
+	sw $t3, 3000($s1)
+	addi $s0, $s0, 0
+	lw $t3,1000($t4)
+	lw $t5,1000($t5)
+	lw $t0,1000($t6)
+	addi $t0,$zero,12
+	addi $t1,$zero,24
+	sw $t0,1000($t3)
+	addi $t1, $t1, 100
+	sw $t0, 1025($zero)
+	sw $t0, 2050($zero)
+exit:
